@@ -15,4 +15,6 @@ public interface UserRepository {
     UserDto findUserById(Long id);
 
     void deleteUserById(Long id);
+
+    boolean checkUser(Long id);
 }
