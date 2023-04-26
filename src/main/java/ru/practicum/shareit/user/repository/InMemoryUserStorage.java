@@ -23,9 +23,6 @@ public class InMemoryUserStorage implements UserRepository {
      */
     private final Map<Long, User> users;
 
-    /**
-     * @return All users, format DTO
-     */
     @Override
     public List<UserDto> findAllUser() {
         List<UserDto> usersDto = new ArrayList<>();
@@ -36,62 +33,37 @@ public class InMemoryUserStorage implements UserRepository {
         return usersDto;
     }
 
-    /**
-     * Be sure to check email for uniqueness
-     *
-     * @param user
-     * @return User format Dto
-     */
     @Override
     public UserDto createNewUser(User user) {
-        user.setId(getId());
+        Long id = getId();
+        user.setId(id);
         if (checkEmail(user.getEmail())) {
             return null;
         }
-        users.put(user.getId(), user);
-        log.debug("User added successfully, user info: '{}'", users.get(user.getId()));
-        return RowMapper.toUserDto(user);
+        users.put(id, user);
+        log.debug("User added successfully, user info: '{}'", users.get(id));
+        return RowMapper.toUserDto(users.get(id));
     }
 
-    /**
-     * Be sure to check email for uniqueness
-     *
-     * @param user
-     * @return User format Dto
-     */
     @Override
-    public UserDto updateUser(User user) {
-        if (checkEmail(user.getEmail())) {
-            return null;
-        }
-        users.put(user.getId(), user);
-        log.debug("User update successfully, user after update info: '{}'", users.get(user.getId()));
-        return RowMapper.toUserDto(users.get(user.getId()));
+    public UserDto updateUser(User user, Long id) {
+        user.setId(id);
+        users.put(id, user);
+        log.debug("User update successfully, user after update info: '{}'", users.get(id));
+        return RowMapper.toUserDto(users.get(id));
     }
 
-    /**
-     * This is temporary
-     *
-     * @param id
-     * @return User format Dto
-     */
     @Override
     public UserDto findUserById(Long id) {
         return RowMapper.toUserDto(users.get(id));
     }
 
-    /**
-     * @param id
-     */
     @Override
     public void deleteUserById(Long id) {
         users.remove(id);
-        log.debug("User delete successfully, id deleted user: '{}'", id);
+        log.debug("User delete successfully, check user: '{}'", checkUser(id));
     }
 
-    /**
-     * @param id
-     */
     @Override
     public boolean checkUser(Long id) {
         if (users.containsKey(id)) {

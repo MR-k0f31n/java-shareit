@@ -1,3 +1,6 @@
+/**
+ * @author MR.k0F31n
+ */
 package ru.practicum.shareit.util;
 
 import ru.practicum.shareit.item.dto.ItemDto;

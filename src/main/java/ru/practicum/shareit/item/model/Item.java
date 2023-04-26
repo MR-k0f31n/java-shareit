@@ -13,9 +13,12 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class Item {
     private Long id;
+    @NotBlank
     private String title;
+    @NotBlank
     private String description;
     private boolean available;
+    @NotNull
     private Long ownerId;
     private boolean request;
 }
