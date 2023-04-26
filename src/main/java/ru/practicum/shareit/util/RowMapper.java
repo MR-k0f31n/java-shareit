@@ -1,3 +1,6 @@
+/**
+ * @author MR.k0F31n
+ */
 package ru.practicum.shareit.util;
 
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -16,10 +19,10 @@ public class RowMapper {
     public static ItemDto toItemDto(Item item) {
         return new ItemDto(
                 item.getId(),
-                item.getTitle(),
+                item.getName(),
                 item.getDescription(),
-                item.isAvailable(),
+                item.getAvailable(),
                 item.getOwnerId(),
-                item.isRequest());
+                item.getRequest());
     }
 }

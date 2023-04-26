@@ -1,11 +1,16 @@
+/**
+ * @author MR.k0F31n
+ */
 package ru.practicum.shareit.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ValidationException;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -25,6 +30,30 @@ public class ErrorHandler {
         log.warn("Error! NullPointer, server status: '{}' text message: '{}'",
                 HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
         return Map.of("Null detected, check your actions", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handlerValidationException(final ValidationException exception) {
+        log.warn("Error! Validation fault, server status: '{}' text message: '{}'",
+                HttpStatus.BAD_REQUEST, exception.getMessage());
+        return Map.of("Validation fault, check your actions", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handlerValidException(final MethodArgumentNotValidException exception) {
+        log.warn("Error! Validation fault, server status: '{}' text message: '{}'",
+                HttpStatus.BAD_REQUEST, exception.getMessage());
+        return Map.of("Validation object fault, check your actions", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handlerEmailConflict(final EmailConflictException exception) {
+        log.warn("Error! Validation fault, server status: '{}' text message: '{}'",
+                HttpStatus.CONFLICT, exception.getMessage());
+        return Map.of("EMAIL ERROR. ", exception.getMessage());
     }
 
     @ExceptionHandler
