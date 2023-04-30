@@ -1,6 +1,3 @@
-/**
- * @author MR.k0F31n
- */
 package ru.practicum.shareit.user;
 
 import lombok.AllArgsConstructor;
@@ -22,6 +19,7 @@ import java.util.List;
 @Slf4j
 public class UserController {
     private UserService service;
+
     @GetMapping
     public List<UserDto> getAllUser() {
         log.debug("Endpoint request: 'GET /users'");
