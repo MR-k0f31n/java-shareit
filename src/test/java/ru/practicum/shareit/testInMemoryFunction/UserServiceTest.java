@@ -25,7 +25,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createTest_AssertTrue() {
+    void CreateTest_AssertTrue() {
         User user = new User(null, "Name", "email@email.com");
         UserDto userDto = service.createNewUser(user);
 
