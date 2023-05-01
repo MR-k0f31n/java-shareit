@@ -11,10 +11,10 @@ import java.util.List;
 public interface ItemService {
 
     /**
-     * @param OwnerId Long Owner id
+     * @param ownerId Long Owner id
      * @return All Item format Dto by owner
      */
-    List<ItemDto> getAllItemsByOwner(Long OwnerId);
+    List<ItemDto> getAllItemsByOwner(Long ownerId);
 
     /**
      * @param item    object

@@ -28,7 +28,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void CreateItems_expectedCorrect() {
+    void createItems_expectedCorrect() {
         Item item1 = new Item(null, "дрель", "Дрель - лучший помошник соседа в воскресенье",
                 true, null, false);
         ItemDto itemDto1 = itemService.createNewItem(item1, 1L);
@@ -46,7 +46,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void CreateItemsNotOwner_expectedThrows() {
+    void createItemsNotOwner_expectedThrows() {
         Item itemNotOwner = new Item(null, "Плебей", "Без племени",
                 true, null, false);
 
@@ -57,7 +57,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void CreateItemsNotAvailable_expectedThrows() {
+    void createItemsNotAvailable_expectedThrows() {
         Item itemNotOwner = new Item(null, "Плебей", "Без племени",
                 null, null, false);
 
