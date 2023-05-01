@@ -9,8 +9,8 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author MR.k0F31n
@@ -38,7 +38,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createTest_ExpectedThrows() {
+    void createTest_ExpectedThrow() {
         User userEmailDuplicate = new User(null, "Name Duplicate", "email@email.com");
         Throwable throwable = assertThrows(EmailConflictException.class,
                 () -> service.createNewUser(userEmailDuplicate));

@@ -10,7 +10,6 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.ValidationException;
-
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
