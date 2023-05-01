@@ -69,12 +69,12 @@ public class ItemServiceTest {
 
     @Test
     void getById_ExpectedCorrect() {
-        ItemDto itemDto = itemService.getItemById(3L);
+        ItemDto itemDto = itemService.getItemById(1L);
 
-        assertEquals("дрель", itemDto.getName(), "Что-то не так с именем");
-        assertEquals("Дрель - лучший помошник соседа в воскресенье", itemDto.getDescription(),
+        assertEquals("Соседка", itemDto.getName(), "Что-то не так с именем");
+        assertEquals("выбирайте соседей правильно", itemDto.getDescription(),
                 "Что-то не так с описанием");
-        assertEquals(1L, itemDto.getOwnerId(), "Не тот владелец");
+        assertEquals(2L, itemDto.getOwnerId(), "Не тот владелец");
         assertEquals(true, itemDto.getAvailable(), "Что-то не так с арендой");
     }
 
