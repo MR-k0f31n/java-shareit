@@ -8,7 +8,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,9 +80,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void deleteItem(Long id, Long ownerId) {
-        if (!repositoryUser.isUserExist(ownerId)) {
-            throw new NotFoundException("User not found! User id: " + ownerId);
-        }
+        userService.findUserById(ownerId);
         if (!getItemById(id).getOwnerId().equals(ownerId)) {
             throw new NotFoundException("Unable to update item , user does not have such item");
         }
@@ -92,13 +89,23 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItem(Long ownerId, String requestSearch) {
-        if (!repositoryUser.isUserExist(ownerId)) {
-            throw new NotFoundException("User not found! User id: " + ownerId);
-        }
+    public List<ItemDto> searchItem(String requestSearch) {
+        log.debug("Searched items: '{}', searched items to lower case: '{}'", requestSearch, requestSearch.toLowerCase());
+        List<ItemDto> findItems = new ArrayList<>();
         if (requestSearch.isEmpty()) {
-            return new ArrayList<>();
+            log.debug("Request Search empty");
+            return findItems;
         }
-        return repository.searchItem(ownerId, requestSearch);
+        String requestSearchLowerFormat = requestSearch.toLowerCase();
+        for (Item item : repository.findAllItems()) {
+            if (item.getAvailable()) {
+                if (item.getName().toLowerCase().contains(requestSearchLowerFormat)
+                        || item.getDescription().toLowerCase().contains(requestSearchLowerFormat)) {
+                    findItems.add(toItemDto(item));
+                }
+            }
+        }
+        log.debug("Find items: '{}'", findItems.size());
+        return findItems;
     }
 }

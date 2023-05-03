@@ -2,10 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +26,7 @@ public class InMemoryItemStorage implements ItemRepository {
 
     @Override
     public List<Item> findAllItems() {
-         log.debug("Return Collection ItemDto by owner, size collection: '{}'", items.size());
+        log.debug("Return Collection ItemDto by owner, size collection: '{}'", items.size());
         return List.copyOf(items.values());
     }
 
@@ -62,21 +60,5 @@ public class InMemoryItemStorage implements ItemRepository {
     public void deleteItem(Long id) {
         items.remove(id);
         log.debug("User delete successfully, check user: '{}'", isItemExist(id));
-    }
-
-    @Override
-    public List<ItemDto> searchItem(Long ownerId, String searchRequest) {
-        List<ItemDto> found = new ArrayList<>();
-        String requestFormat = searchRequest.toLowerCase();
-        for (Item item : items.values()) {
-            if (item.getAvailable()) {
-                if (item.getName().toLowerCase().contains(requestFormat) ||
-                        item.getDescription().toLowerCase().contains(requestFormat)) {
-                    found.add(toItemDto(item));
-                }
-            }
-        }
-        log.debug("Found count item: '{}'", found.size());
-        return found;
     }
 }
