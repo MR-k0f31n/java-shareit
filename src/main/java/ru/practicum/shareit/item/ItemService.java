@@ -16,19 +16,19 @@ public interface ItemService {
     List<ItemDto> getAllItemsByOwner(Long ownerId);
 
     /**
-     * @param ItemDto object
+     * @param itemDto object
      * @param ownerId Long id User
      * @return Item format Dto
      */
-    ItemDto createNewItem(ItemDto ItemDto, Long ownerId);
+    ItemDto createNewItem(ItemDto itemDto, Long ownerId);
 
     /**
-     * @param ItemDto object
+     * @param itemDto object
      * @param id      Long id item
      * @param ownerId Long id User
      * @return Item format Dto
      */
-    ItemDto updateItem(ItemDto ItemDto, Long id, Long ownerId);
+    ItemDto updateItem(ItemDto itemDto, Long id, Long ownerId);
 
     /**
      * @param id Long Item id
