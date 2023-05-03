@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.repository;
+package ru.practicum.shareit.item;
 
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -12,43 +12,36 @@ public interface ItemRepository {
 
     /**
      * @param id Long Item id
-     * @return Item format Dto
+     * @return Item object
      */
-    ItemDto findItemById(Long id);
+    Item findItemById(Long id);
 
     /**
-     * @param ownerId Long Owner id
-     * @return All Item format Dto by owner
+     * @return All Item
      */
-    List<ItemDto> findAllItemByOwner(Long ownerId);
+    List<Item> findAllItems();
 
     /**
      * @param item object
      * @return Item format Dto
      */
-    ItemDto createItem(Item item);
+    Item createItem(Item item);
 
     /**
      * @param item object
      * @param id   Long id item
      * @return Item format Dto
      */
-    ItemDto updateItem(Item item, Long id);
+    Item updateItem(Item item, Long id);
 
     /**
      * @param id Long id item
      * @return boolean check Item in collection
      */
-    boolean checkItem(Long id);
+    boolean isItemExist(Long id);
 
     /**
      * @param id Long id item
      */
     void deleteItem(Long id);
-
-    /**
-     * @param searchRequest free search request
-     * @return collection Item format Dto
-     */
-    List<ItemDto> searchItem(Long ownerId, String searchRequest);
 }

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.service;
+package ru.practicum.shareit.item;
 
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -17,19 +17,19 @@ public interface ItemService {
     List<ItemDto> getAllItemsByOwner(Long ownerId);
 
     /**
-     * @param item    object
+     * @param ItemDto object
      * @param ownerId Long id User
      * @return Item format Dto
      */
-    ItemDto createNewItem(Item item, Long ownerId);
+    ItemDto createNewItem(ItemDto ItemDto, Long ownerId);
 
     /**
-     * @param item    object
+     * @param ItemDto object
      * @param id      Long id item
      * @param ownerId Long id User
      * @return Item format Dto
      */
-    ItemDto updateItem(Item item, Long id, Long ownerId);
+    ItemDto updateItem(ItemDto ItemDto, Long id, Long ownerId);
 
     /**
      * @param id Long Item id
@@ -45,8 +45,7 @@ public interface ItemService {
 
     /**
      * @param searchRequest free search request
-     * @param ownerId       Long id User
      * @return collection Item format Dto
      */
-    List<ItemDto> searchItem(Long ownerId, String searchRequest);
+    List<ItemDto> searchItem(String searchRequest);
 }

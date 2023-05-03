@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -33,15 +32,15 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto createUser(@Valid @RequestBody User user) {
+    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
         log.debug("Endpoint request: 'POST /users'");
-        return service.createNewUser(user);
+        return service.createNewUser(userDto);
     }
 
     @PatchMapping("/{id}")
-    public UserDto updateUser(@RequestBody User user, @PathVariable Long id) {
+    public UserDto updateUser(@RequestBody UserDto userDto, @PathVariable Long id) {
         log.debug("Endpoint request: 'PUT /users/{userId}'");
-        return service.updateUser(user, id);
+        return service.updateUser(userDto, id);
     }
 
     @DeleteMapping("/{id}")

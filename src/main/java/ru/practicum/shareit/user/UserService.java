@@ -1,10 +1,9 @@
 /**
  * @author MR.k0F31n
  */
-package ru.practicum.shareit.user.service;
+package ru.practicum.shareit.user;
 
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
@@ -18,18 +17,18 @@ public interface UserService {
     /**
      * Be sure to check email for uniqueness
      *
-     * @param user object
+     * @param userDto object
      * @return User format DTO
      */
-    UserDto createNewUser(User user);
+    UserDto createNewUser(UserDto userDto);
 
     /**
      * Be sure to check email for uniqueness and contains user
      *
-     * @param user object
+     * @param userDto object
      * @return User format DTO
      */
-    UserDto updateUser(User user, Long id);
+    UserDto updateUser(UserDto userDto, Long id);
 
     /**
      * @param id Long id user
@@ -37,5 +36,8 @@ public interface UserService {
      */
     UserDto findUserById(Long id);
 
+    /**
+     * @param id Long id user
+     */
     void deleteUserById(Long id);
 }

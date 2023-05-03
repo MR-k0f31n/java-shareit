@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -36,16 +35,16 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto createNewItem(@RequestHeader("X-Sharer-User-Id") Long ownerId, @Valid @RequestBody Item item) {
+    public ItemDto createNewItem(@RequestHeader("X-Sharer-User-Id") Long ownerId, @Valid @RequestBody ItemDto itemDto) {
         log.debug("Endpoint request: 'POST /items'");
-        return service.createNewItem(item, ownerId);
+        return service.createNewItem(itemDto, ownerId);
     }
 
     @PatchMapping("/{id}")
-    public ItemDto updateItem(@RequestBody Item item, @PathVariable Long id,
+    public ItemDto updateItem(@RequestBody ItemDto itemDto, @PathVariable Long id,
                               @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.debug("Endpoint request: 'PUT /items/{id}'");
-        return service.updateItem(item, id, ownerId);
+        return service.updateItem(itemDto, id, ownerId);
     }
 
     @DeleteMapping("/{id}")
@@ -55,9 +54,8 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestHeader("X-Sharer-User-Id") Long ownerId,
-                                    @RequestParam String text) {
-        log.debug("Endpoint request: 'GET /items/{search}'");
-        return service.searchItem(ownerId, text);
+    public List<ItemDto> searchItem(@RequestParam String text) {
+        log.debug("Endpoint request: 'GET items/search?text='" + text);
+        return service.searchItem(text);
     }
 }
