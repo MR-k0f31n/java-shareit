@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EmailConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.practicum.shareit.user.dto.UserDtoMapper.toUser;
-import static ru.practicum.shareit.user.dto.UserDtoMapper.toUserDto;
+import static ru.practicum.shareit.user.UserDtoMapper.toUser;
+import static ru.practicum.shareit.user.UserDtoMapper.toUserDto;
 
 /**
  * @author MR.k0F31n
@@ -39,7 +37,8 @@ public class UserServiceImpl implements UserService {
         if (repository.isEmailExist(userDto.getEmail())) {
             throw new EmailConflictException("This email '" + userDto.getEmail() + "' not unique, please check email");
         }
-        return toUserDto(repository.createNewUser(toUser(userDto)));
+        User user = toUser(userDto);
+        return toUserDto(repository.createNewUser(user));
     }
 
     @Override

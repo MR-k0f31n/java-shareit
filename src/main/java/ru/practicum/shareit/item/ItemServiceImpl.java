@@ -4,15 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.practicum.shareit.item.dto.ItemDtoMapper.toItemDto;
-import static ru.practicum.shareit.item.model.ItemMapper.toItem;
+import static ru.practicum.shareit.item.ItemDtoMapper.toItem;
+import static ru.practicum.shareit.item.ItemDtoMapper.toItemDto;
 
 /**
  * @author MR.k0F31n
@@ -42,7 +40,8 @@ public class ItemServiceImpl implements ItemService {
         log.warn("Task create new item, item info: '{}'", itemDto);
         userService.findUserById(ownerId);
         itemDto.setOwnerId(ownerId);
-        return toItemDto(repository.createItem(toItem(itemDto)));
+        Item item = toItem(itemDto);
+        return toItemDto(repository.createItem(item));
     }
 
     @Override

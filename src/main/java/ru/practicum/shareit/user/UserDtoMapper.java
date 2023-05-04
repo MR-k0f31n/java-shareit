@@ -1,6 +1,4 @@
-package ru.practicum.shareit.user.dto;
-
-import ru.practicum.shareit.user.model.User;
+package ru.practicum.shareit.user;
 
 /**
  * @author MR.k0F31n
