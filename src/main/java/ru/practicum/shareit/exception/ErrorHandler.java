@@ -4,6 +4,7 @@
 package ru.practicum.shareit.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PSQLException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,7 +35,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handlerValidationException(final ValidationException exception) {
+    public Map<String, String> handlerValidationException(final ValidatorException exception) {
         log.warn("Error! Validation fault, server status: '{}' text message: '{}'",
                 HttpStatus.BAD_REQUEST, exception.getMessage());
         return Map.of("Validation fault, check your actions", exception.getMessage());
@@ -53,13 +54,6 @@ public class ErrorHandler {
     public Map<String, String> handlerEmailConflict(final EmailConflictException exception) {
         log.warn("Error! Validation fault, server status: '{}' text message: '{}'",
                 HttpStatus.CONFLICT, exception.getMessage());
-        return Map.of("EMAIL ERROR. ", exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleThrowable(final Throwable exception) {
-        log.warn("Error! Server status: '{}' text message: '{}'", HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
-        return Map.of("Server Error", exception.getMessage());
+        return Map.of("EMAIL ERROR. ", "This email exist");
     }
 }
