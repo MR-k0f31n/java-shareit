@@ -6,11 +6,10 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.UserService;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static ru.practicum.shareit.item.ItemDtoMapper.toItem;
-import static ru.practicum.shareit.item.ItemDtoMapper.toItemDto;
+import static ru.practicum.shareit.item.ItemMapper.*;
 
 /**
  * @author MR.k0F31n
@@ -26,85 +25,68 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getAllItemsByOwner(Long id) {
         log.debug("Task get all items by owner");
         userService.findUserById(id);
-        List<ItemDto> itemsDto = new ArrayList<>();
-        for (Item item : repository.findAllItems()) {
-            if (item.getOwnerId().equals(id)) {
-                itemsDto.add(toItemDto(item));
-            }
-        }
-        return itemsDto;
+        return toItemDtoList(repository.getItemsByOwnerId(id));
     }
 
     @Override
     public ItemDto createNewItem(ItemDto itemDto, Long ownerId) {
         log.warn("Task create new item, item info: '{}'", itemDto);
         userService.findUserById(ownerId);
-        itemDto.setOwnerId(ownerId);
-        Item item = toItem(itemDto);
-        return toItemDto(repository.createItem(item));
+        final Item item = toItem(itemDto, ownerId);
+        item.getOwner().setId(ownerId);
+        return toItemDto(repository.save(item));
     }
 
     @Override
     public ItemDto updateItem(ItemDto itemDto, Long id, Long ownerId) {
         log.warn("Task update item, item info: " + itemDto);
         userService.findUserById(ownerId);
-        Item itemForUpdate = toItem(getItemById(id));
-        if (!itemForUpdate.getOwnerId().equals(ownerId)) {
-            throw new NotFoundException("Unable to update item , user does not have such item");
-        }
         String name = itemDto.getName();
         String description = itemDto.getDescription();
         Boolean available = itemDto.getAvailable();
-        if (name != null) {
+        if (name == null && description == null && available == null) {
+            return null;
+        }
+        final Item itemForUpdate = repository.findById(id).orElseThrow(
+                ()->new NotFoundException("Item not found! Item id: " + id));
+        if (!itemForUpdate.getOwner().getId().equals(ownerId)) {
+            throw new NotFoundException("Unable to update item , user does not have such item");
+        }
+        if (name != null && !name.isBlank()) {
             itemForUpdate.setName(name);
         }
-        if (description != null) {
+        if (description != null && !description.isBlank()) {
             itemForUpdate.setDescription(description);
         }
         if (available != null) {
             itemForUpdate.setAvailable(available);
         }
-        return toItemDto(repository.updateItem(itemForUpdate, id));
+        return toItemDto(repository.save(itemForUpdate));
     }
 
     @Override
     public ItemDto getItemById(Long id) {
         log.warn("Task get item by id, item id: '{}'", id);
-        try {
-            return toItemDto(repository.findItemById(id));
-        } catch (NullPointerException exception) {
-            throw new NotFoundException("Item not found! Item id: " + id);
-        }
+        Item item = repository.findById(id).orElseThrow(
+                ()->new NotFoundException("Item not found! Item id: " + id));
+        return toItemDto(item);
     }
 
     @Override
     public void deleteItem(Long id, Long ownerId) {
         userService.findUserById(ownerId);
-        if (!getItemById(id).getOwnerId().equals(ownerId)) {
+        if (!getItemById(id).getOwner().getId().equals(ownerId)) {
             throw new NotFoundException("Unable to update item , user does not have such item");
         }
         log.warn("try delete item by id, item id: '{}'", id);
-        repository.deleteItem(id);
+        repository.deleteById(id);
     }
 
     @Override
     public List<ItemDto> searchItem(String requestSearch) {
-        log.debug("Searched items: '{}', searched items to lower case: '{}'", requestSearch, requestSearch.toLowerCase());
-        List<ItemDto> findItems = new ArrayList<>();
-        if (requestSearch.isEmpty()) {
-            log.debug("Request Search empty");
-            return findItems;
+        if (requestSearch.isEmpty() || requestSearch.isBlank()) {
+            return Collections.emptyList();
         }
-        String requestSearchLowerFormat = requestSearch.toLowerCase();
-        for (Item item : repository.findAllItems()) {
-            if (item.getAvailable()) {
-                if (item.getName().toLowerCase().contains(requestSearchLowerFormat)
-                        || item.getDescription().toLowerCase().contains(requestSearchLowerFormat)) {
-                    findItems.add(toItemDto(item));
-                }
-            }
-        }
-        log.debug("Find items: '{}'", findItems.size());
-        return findItems;
+        return toItemDtoList(repository.searchItems(requestSearch));
     }
 }

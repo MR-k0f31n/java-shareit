@@ -1,44 +1,18 @@
 package ru.practicum.shareit.item;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.Collection;
 
 /**
  * @author MR.k0F31n
  */
-public interface ItemRepository {
+public interface ItemRepository extends JpaRepository<Item, Long> {
+    Collection<Item> getItemsByOwnerId(Long ownerId);
 
-    /**
-     * @param id Long Item id
-     * @return Item object
-     */
-    Item findItemById(Long id);
-
-    /**
-     * @return All Item
-     */
-    List<Item> findAllItems();
-
-    /**
-     * @param item object
-     * @return Item format Dto
-     */
-    Item createItem(Item item);
-
-    /**
-     * @param item object
-     * @param id   Long id item
-     * @return Item format Dto
-     */
-    Item updateItem(Item item, Long id);
-
-    /**
-     * @param id Long id item
-     * @return boolean check Item in collection
-     */
-    boolean isItemExist(Long id);
-
-    /**
-     * @param id Long id item
-     */
-    void deleteItem(Long id);
+    @Query("SELECT i FROM Item i " +
+            "WHERE LOWER(i.name) LIKE LOWER(CONCAT('%', ?1, '%')) " +
+            "OR LOWER(i.description) LIKE LOWER(CONCAT('%', ?1, '%')) AND i.available = true")
+    Collection<Item> searchItems(String searchByName);
 }
