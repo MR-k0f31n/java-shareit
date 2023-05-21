@@ -9,7 +9,6 @@ import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 
 import javax.transaction.Transactional;
-import java.util.Collections;
 import java.util.List;
 
 import static ru.practicum.shareit.user.UserMapper.*;

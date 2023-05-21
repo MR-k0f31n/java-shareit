@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.user.User;
 
 import java.util.ArrayList;
@@ -24,7 +25,11 @@ public class ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
-                item.getOwner());
+                item.getOwner(),
+                new Booking(),
+                new Booking(),
+                new ArrayList<>()
+                );
     }
 
     public static List<ItemDto> toItemDtoList(Iterable<Item> items) {

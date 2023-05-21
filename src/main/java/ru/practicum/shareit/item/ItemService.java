@@ -1,5 +1,8 @@
 package ru.practicum.shareit.item;
 
+import ru.practicum.shareit.comment.CommentDto;
+import ru.practicum.shareit.comment.CommentInputDto;
+
 import java.util.List;
 
 /**
@@ -32,7 +35,7 @@ public interface ItemService {
      * @param id Long Item id
      * @return Item format Dto
      */
-    ItemDto getItemById(Long id);
+    ItemDto getItemDtoById(Long id);
 
     /**
      * @param id      Long id item
@@ -45,4 +48,13 @@ public interface ItemService {
      * @return collection Item format Dto
      */
     List<ItemDto> searchItem(String searchRequest);
+
+    /**
+     *
+     * @param userId Long user ID from check user
+     * @param itemId Long item ID from check item
+     * @param commentInputDto input format object comment
+     * @return return Item Format DTO witch all data (Item Info, Comments, Next/Last date booking)
+     */
+    CommentDto addComment(Long userId, Long itemId, CommentInputDto commentInputDto);
 }
