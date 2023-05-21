@@ -44,6 +44,16 @@ public class BookingMapper {
         );
     }
 
+    public static BookingItemBookerDto toBookingItemBookerDto(Booking booking) {
+        return new BookingItemBookerDto(
+                booking.getId(),
+                booking.getItem().getId(),
+                booking.getBooker().getId(),
+                booking.getStartRent(),
+                booking.getEndRent()
+        );
+    }
+
     public static List<BookingDto> toBookingDtoList(Iterable<Booking> bookings) {
         List<BookingDto> bookingDtoList = new ArrayList<>();
         for (Booking booking : bookings) {

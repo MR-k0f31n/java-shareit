@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.UnsupportedStatus;
 import ru.practicum.shareit.exception.ValidatorException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
@@ -29,12 +30,15 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto createNewBooking(BookingInputDTO bookingInputDTODto, Long userId) {
-        long itemId = bookingInputDTODto.getItemId();
-        if (bookingInputDTODto.getEnd().isBefore(bookingInputDTODto.getStart()) ||
-                bookingInputDTODto.getEnd().equals(bookingInputDTODto.getStart())) {
+        Long itemId = bookingInputDTODto.getItemId();
+        if (bookingInputDTODto.getStart().isAfter(bookingInputDTODto.getEnd()) ||
+                bookingInputDTODto.getEnd().isEqual(bookingInputDTODto.getStart())) {
             throw new ValidatorException("Booking start time before or equals booking end time");
         }
         final Item item = getItemById(itemId);
+        if(userId == item.getOwner().getId().longValue()) {
+            throw new NotFoundException("you don't can rent own items");
+        }
         final User booker = getUserById(userId);
         if (!item.getAvailable()) {
             throw new ValidatorException("Item not available");
@@ -75,8 +79,8 @@ public class BookingServiceImpl implements BookingService {
                 return toBookingDtoList(repository.findAllByItemOwnerIdOrderByStartRentDesc(userId));
             case "CURRENT":
                 LocalDateTime now = LocalDateTime.now();
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterAndStatusOrderByStartRent
-                        (userId, now, now, Status.APPROVED));
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent
+                        (userId, now, now));
             case "PAST":
                 return toBookingDtoList(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRent
                         (userId, LocalDateTime.now()));
@@ -88,7 +92,7 @@ public class BookingServiceImpl implements BookingService {
             case "REJECTED":
                 return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId, Status.REJECTED));
         }
-        throw new ValidatorException("Status unknown " + status);
+        throw new UnsupportedStatus("Unknown state: " + status);
     }
 
     @Override
@@ -112,7 +116,7 @@ public class BookingServiceImpl implements BookingService {
             case "REJECTED":
                 return toBookingDtoList(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.REJECTED));
         }
-        throw new ValidatorException("Status unknown " + status);
+        throw new UnsupportedStatus("Unknown state: " + status);
     }
 
     @Override

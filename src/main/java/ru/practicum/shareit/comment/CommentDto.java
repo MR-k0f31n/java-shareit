@@ -21,7 +21,7 @@ public class CommentDto {
     @NotNull
     private String text;
     @NotNull
-    private Item item;
+    private Long itemId;
     @NotNull
     private User author;
     private LocalDateTime created;

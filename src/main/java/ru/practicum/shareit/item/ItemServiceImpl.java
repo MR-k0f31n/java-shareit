@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.comment.Comment;
@@ -19,9 +20,10 @@ import ru.practicum.shareit.user.UserService;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-import static ru.practicum.shareit.comment.CommentMapper.toComment;
-import static ru.practicum.shareit.comment.CommentMapper.toCommentDto;
+import static ru.practicum.shareit.booking.BookingMapper.toBookingItemBookerDto;
+import static ru.practicum.shareit.comment.CommentMapper.*;
 import static ru.practicum.shareit.item.ItemMapper.*;
 import static ru.practicum.shareit.user.UserMapper.toUser;
 
@@ -42,9 +44,8 @@ public class ItemServiceImpl implements ItemService {
         log.debug("Task get all items by owner");
         userService.findUserById(id);
         List<ItemDto> itemDtoList = toItemDtoList(repository.getItemsByOwnerId(id));
-        for(ItemDto itemDto : itemDtoList) {
-            setNextLastDateBooking(itemDto);
-            itemDto.setComments(commentRepository.findAllByItemId(id));
+        for (ItemDto itemDto : itemDtoList) {
+            setNextAndLastDateBookingAndComments(itemDto);
         }
         return toItemDtoList(repository.getItemsByOwnerId(id));
     }
@@ -88,8 +89,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getItemDtoById(Long id) {
         log.warn("Task get item by id, item id: '{}'", id);
         ItemDto returnItem = toItemDto(getItemById(id));
-        returnItem = setNextLastDateBooking(returnItem);
-        returnItem.setComments(commentRepository.findAllByItemId(id));
+        setNextAndLastDateBookingAndComments(returnItem);
         return returnItem;
     }
 
@@ -118,9 +118,8 @@ public class ItemServiceImpl implements ItemService {
         if (commentInputDto.getText().isEmpty()) {
             throw new ValidatorException("Text comment is empty");
         }
-        final Booking booking = bookingRepository.findByBookerIdAndItemIdAndEndRentAfterAndStatus(userId, itemId,
-                LocalDateTime.now(), Status.APPROVED);
-        if(booking == null) {
+        if (!bookingRepository.existsByBookerIdAndItemIdAndEndRentBefore(userId, itemId,
+                LocalDateTime.now())) {
             throw new ValidatorException("User not rent item or rent not finished");
         }
         final Comment comment = commentRepository.findByAuthorIdAndItemId(userId, itemId);
@@ -140,11 +139,21 @@ public class ItemServiceImpl implements ItemService {
                 () -> new NotFoundException("Item not found! Item id: " + id));
     }
 
-    private ItemDto setNextLastDateBooking(ItemDto item) {
-        item.setLastBooking(bookingRepository.findFirstByItemIdAndStartRentBeforeAndStatusOrderByEndRentDesc
-                (item.getId(), LocalDateTime.now(), Status.APPROVED));
-        item.setNextBooking(bookingRepository.findFirstByItemIdAndStartRentAfterAndStatusOrderByEndRentAsc
-                (item.getId(), LocalDateTime.now(), Status.APPROVED));
-        return item;
+    private void setNextAndLastDateBookingAndComments(ItemDto item) {
+        item.setLastBooking(bookingRepository
+                .findFirstByItemIdAndStartRentBeforeAndStatusOrderByEndRentDesc(item.getId(),
+                        LocalDateTime.now(),
+                        Status.APPROVED)
+                .map(BookingMapper::toBookingItemBookerDto)
+                .orElse(null));
+
+        item.setNextBooking(bookingRepository
+                .findFirstByItemIdAndStartRentAfterAndStatusOrderByEndRentAsc(item.getId(),
+                        LocalDateTime.now(),
+                        Status.APPROVED)
+                .map(BookingMapper::toBookingItemBookerDto)
+                .orElse(null));
+
+        item.setComments(toCommentDtoList(commentRepository.findAllByItemId(item.getId())));
     }
 }
