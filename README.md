@@ -17,4 +17,7 @@ Template repository for Shareit project.
 - H2 SQL
 - Maven
 
+## Structure DB
+<img src="DataBase.png">
+
 #### Project FOR Yandex Practicum
