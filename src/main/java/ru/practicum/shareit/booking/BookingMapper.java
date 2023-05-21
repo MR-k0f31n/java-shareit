@@ -46,7 +46,7 @@ public class BookingMapper {
 
     public static List<BookingDto> toBookingDtoList(Iterable<Booking> bookings) {
         List<BookingDto> bookingDtoList = new ArrayList<>();
-        for(Booking booking : bookings) {
+        for (Booking booking : bookings) {
             bookingDtoList.add(toBookingDto(booking));
         }
         return bookingDtoList;

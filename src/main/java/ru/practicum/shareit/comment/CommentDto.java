@@ -7,6 +7,8 @@ import ru.practicum.shareit.user.User;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * @author MR.k0F31n
@@ -22,4 +24,5 @@ public class CommentDto {
     private Item item;
     @NotNull
     private User author;
+    private LocalDateTime created;
 }

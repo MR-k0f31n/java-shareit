@@ -3,21 +3,18 @@ package ru.practicum.shareit.booking;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidatorException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
-import ru.practicum.shareit.user.UserService;
 
-import java.util.Collection;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-import static ru.practicum.shareit.booking.BookingMapper.toBooking;
-import static ru.practicum.shareit.booking.BookingMapper.toBookingDto;
+import static ru.practicum.shareit.booking.BookingMapper.*;
 
 /**
  * @author MR.k0F31n
@@ -52,10 +49,13 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto setStatusBooking(Long bookingId, Long userId, Boolean isApproved) {
         final Booking booking = getBookingById(bookingId);
+        if (!booking.getStatus().equals(Status.WAITING)) {
+            throw new ValidatorException("Booking id '{ " + bookingId + " }' status not waiting");
+        }
         final Item item = booking.getItem();
         final User owner = item.getOwner();
-        if (!booking.getStatus().equals(Status.WAITING) || !owner.getId().equals(userId) || !item.getAvailable()) {
-            throw new ValidatorException("Booking id '{ " + bookingId + " }' can not update check status or owner");
+        if (!(owner.getId().equals(userId))) {
+            throw new NotFoundException("Not owner reader");
         }
         if (isApproved) {
             booking.setStatus(Status.APPROVED);
@@ -69,13 +69,50 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getAllBookingByStatusFromOwner(Long userId, String status) {
-
-        return null;
+        getUserById(userId);
+        switch (status) {
+            case "ALL":
+                return toBookingDtoList(repository.findAllByItemOwnerIdOrderByStartRentDesc(userId));
+            case "CURRENT":
+                LocalDateTime now = LocalDateTime.now();
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterAndStatusOrderByStartRent
+                        (userId, now, now, Status.APPROVED));
+            case "PAST":
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRent
+                        (userId, LocalDateTime.now()));
+            case "FUTURE":
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentAfterAndStatusOrderByStartRent(userId,
+                        LocalDateTime.now(), Status.WAITING));
+            case "WAITING":
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId, Status.WAITING));
+            case "REJECTED":
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId, Status.REJECTED));
+        }
+        throw new ValidatorException("Status unknown " + status);
     }
 
     @Override
     public List<BookingDto> getAllBookingByStatusFromBooker(Long userId, String status) {
-        return null;
+        getUserById(userId);
+        switch (status) {
+            case "ALL":
+                return toBookingDtoList(repository.findAllByBookerIdOrderByStartRentDesc(userId));
+            case "CURRENT":
+                LocalDateTime now = LocalDateTime.now();
+                return toBookingDtoList(repository.findAllByBookerIdAndStartRentBeforeAndEndRentAfterAndStatusOrderByStartRent
+                        (userId, now, now, Status.APPROVED));
+            case "PAST":
+                return toBookingDtoList(repository.findAllByBookerIdAndEndRentBeforeOrderByStartRent(userId,
+                        LocalDateTime.now()));
+            case "FUTURE":
+                return toBookingDtoList(repository.findAllByBookerIdAndStartRentAfterAndStatusOrderByStartRent(userId,
+                        LocalDateTime.now(), Status.WAITING));
+            case "WAITING":
+                return toBookingDtoList(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.WAITING));
+            case "REJECTED":
+                return toBookingDtoList(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.REJECTED));
+        }
+        throw new ValidatorException("Status unknown " + status);
     }
 
     @Override
