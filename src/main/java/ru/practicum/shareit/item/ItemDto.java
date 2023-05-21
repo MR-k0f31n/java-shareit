@@ -3,7 +3,9 @@ package ru.practicum.shareit.item;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingItemBookerDto;
 import ru.practicum.shareit.comment.Comment;
+import ru.practicum.shareit.comment.CommentDto;
 import ru.practicum.shareit.user.User;
 
 import javax.validation.constraints.NotBlank;
@@ -24,7 +26,7 @@ public class ItemDto {
     @NotNull
     private Boolean available;
     private User owner;
-    private Booking nextBooking;
-    private Booking lastBooking;
-    private List<Comment> comments;
+    private BookingItemBookerDto nextBooking;
+    private BookingItemBookerDto lastBooking;
+    private List<CommentDto> comments;
 }

@@ -54,4 +54,12 @@ public class ErrorHandler {
                 HttpStatus.CONFLICT, exception.getMessage());
         return Map.of("EMAIL ERROR. ", "This email exist");
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleUnsupportedStatusException(final UnsupportedStatus exception) {
+        log.warn("Error! Unsupported Status, server status: '{}' text message: '{}'",
+                HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        return Map.of("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
+    }
 }

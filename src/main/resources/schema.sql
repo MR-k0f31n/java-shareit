@@ -1,6 +1,6 @@
 -- THIS "КРЯКЭН" NOT FOR H2 TO IM.MEM
---DROP TABLE IF EXISTS comments;
 --DROP TABLE IF EXISTS booking;
+--DROP TABLE IF EXISTS comments;
 --DROP TABLE IF EXISTS items;
 --DROP TABLE IF EXISTS users;
 
