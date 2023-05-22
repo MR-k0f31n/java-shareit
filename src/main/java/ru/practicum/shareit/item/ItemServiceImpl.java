@@ -42,7 +42,8 @@ public class ItemServiceImpl implements ItemService {
         userService.findUserById(id);
         List<ItemDto> itemDtoList = toItemDtoList(repository.findAllByOwnerId(id));
         for (ItemDto itemDto : itemDtoList) {
-            setNextAndLastDateBookingAndComments(itemDto);
+            setNextAndLastDateBooking(itemDto);
+            setComments(itemDto);
         }
         return itemDtoList;
     }
@@ -85,10 +86,16 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemDtoById(Long id) {
+    public ItemDto getItemDtoById(Long id, Long userId) {
         log.warn("Task get item by id, item id: '{}'", id);
         ItemDto returnItem = toItemDto(getItemById(id));
-        setNextAndLastDateBookingAndComments(returnItem);
+        if (returnItem.getOwner().getId() == userId.longValue()) {
+            setNextAndLastDateBooking(returnItem);
+        } else {
+            returnItem.setLastBooking(null);
+            returnItem.setNextBooking(null);
+        }
+        setComments(returnItem);
         return returnItem;
     }
 
@@ -138,7 +145,7 @@ public class ItemServiceImpl implements ItemService {
                 () -> new NotFoundException("Item not found! Item id: " + id));
     }
 
-    private void setNextAndLastDateBookingAndComments(ItemDto item) {
+    private void setNextAndLastDateBooking(ItemDto item) {
         item.setNextBooking(bookingRepository
                 .findFirstByItemIdAndStartRentAfterAndStatusOrderByStartRentAsc(item.getId(),
                         LocalDateTime.now(),
@@ -152,7 +159,9 @@ public class ItemServiceImpl implements ItemService {
                         Status.APPROVED)
                 .map(BookingMapper::toBookingItemBookerDto)
                 .orElse(null));
+    }
 
+    private void setComments(ItemDto item) {
         item.setComments(toCommentDtoList(commentRepository.findAllByItemId(item.getId())));
     }
 }

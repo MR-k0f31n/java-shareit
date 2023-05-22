@@ -35,7 +35,7 @@ public interface ItemService {
      * @param id Long Item id
      * @return Item format Dto
      */
-    ItemDto getItemDtoById(Long id);
+    ItemDto getItemDtoById(Long id, Long userId);
 
     /**
      * @param id      Long id item
