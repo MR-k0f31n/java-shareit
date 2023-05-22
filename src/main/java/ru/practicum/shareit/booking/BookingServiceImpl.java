@@ -11,8 +11,8 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static ru.practicum.shareit.booking.BookingMapper.*;
@@ -28,6 +28,7 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
+    @Transactional
     @Override
     public BookingDto createNewBooking(BookingInputDTO bookingInputDTODto, Long userId) {
         Long itemId = bookingInputDTODto.getItemId();
@@ -36,7 +37,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidatorException("Booking start time before or equals booking end time");
         }
         final Item item = getItemById(itemId);
-        if(userId == item.getOwner().getId().longValue()) {
+        if (userId == item.getOwner().getId().longValue()) {
             throw new NotFoundException("you don't can rent own items");
         }
         final User booker = getUserById(userId);
@@ -50,6 +51,7 @@ public class BookingServiceImpl implements BookingService {
         return toBookingDto(repository.save(booking));
     }
 
+    @Transactional
     @Override
     public BookingDto setStatusBooking(Long bookingId, Long userId, Boolean isApproved) {
         final Booking booking = getBookingById(bookingId);
@@ -82,11 +84,11 @@ public class BookingServiceImpl implements BookingService {
                 return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent
                         (userId, now, now));
             case "PAST":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRent
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRentDesc
                         (userId, LocalDateTime.now()));
             case "FUTURE":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentAfterAndStatusOrderByStartRent(userId,
-                        LocalDateTime.now(), Status.WAITING));
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentAfterOrderByStartRentDesc(userId,
+                        LocalDateTime.now()));
             case "WAITING":
                 return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId, Status.WAITING));
             case "REJECTED":
@@ -103,14 +105,14 @@ public class BookingServiceImpl implements BookingService {
                 return toBookingDtoList(repository.findAllByBookerIdOrderByStartRentDesc(userId));
             case "CURRENT":
                 LocalDateTime now = LocalDateTime.now();
-                return toBookingDtoList(repository.findAllByBookerIdAndStartRentBeforeAndEndRentAfterAndStatusOrderByStartRent
-                        (userId, now, now, Status.APPROVED));
+                return toBookingDtoList(repository.findAllByBookerIdAndStartRentBeforeAndEndRentAfterOrderByStartRentDesc
+                        (userId, now, now));
             case "PAST":
-                return toBookingDtoList(repository.findAllByBookerIdAndEndRentBeforeOrderByStartRent(userId,
+                return toBookingDtoList(repository.findAllByBookerIdAndEndRentBeforeOrderByStartRentDesc(userId,
                         LocalDateTime.now()));
             case "FUTURE":
-                return toBookingDtoList(repository.findAllByBookerIdAndStartRentAfterAndStatusOrderByStartRent(userId,
-                        LocalDateTime.now(), Status.WAITING));
+                return toBookingDtoList(repository.findAllByBookerIdAndStartRentAfterOrderByStartRentDesc(userId,
+                        LocalDateTime.now()));
             case "WAITING":
                 return toBookingDtoList(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.WAITING));
             case "REJECTED":

@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingItemBookerDto;
 import ru.practicum.shareit.user.User;
 
@@ -30,7 +29,7 @@ public class ItemMapper {
                 new BookingItemBookerDto(),
                 new BookingItemBookerDto(),
                 new ArrayList<>()
-                );
+        );
     }
 
     public static List<ItemDto> toItemDtoList(Iterable<Item> items) {

@@ -50,9 +50,8 @@ public interface ItemService {
     List<ItemDto> searchItem(String searchRequest);
 
     /**
-     *
-     * @param userId Long user ID from check user
-     * @param itemId Long item ID from check item
+     * @param userId          Long user ID from check user
+     * @param itemId          Long item ID from check item
      * @param commentInputDto input format object comment
      * @return return Item Format DTO witch all data (Item Info, Comments, Next/Last date booking)
      */
