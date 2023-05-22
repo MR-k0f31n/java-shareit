@@ -107,8 +107,8 @@ public class BookingServiceImpl implements BookingService {
                 return toBookingDtoList(repository.findAllByBookerIdOrderByStartRentDesc(userId));
             case "CURRENT":
                 LocalDateTime now = LocalDateTime.now();
-                return toBookingDtoList(repository.findAllByBookerIdAndStartRentBeforeAndEndRentAfterOrderByStartRentDesc
-                        (userId, now, now));
+                return toBookingDtoList(repository.findAllByBookerIdAndStartRentBeforeAndEndRentAfterOrderByStartRentDesc(
+                        userId, now, now));
             case "PAST":
                 return toBookingDtoList(repository.findAllByBookerIdAndEndRentBeforeOrderByStartRentDesc(userId,
                         LocalDateTime.now()));
