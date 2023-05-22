@@ -81,18 +81,20 @@ public class BookingServiceImpl implements BookingService {
                 return toBookingDtoList(repository.findAllByItemOwnerIdOrderByStartRentDesc(userId));
             case "CURRENT":
                 LocalDateTime now = LocalDateTime.now();
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent
-                        (userId, now, now));
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent(
+                        userId, now, now));
             case "PAST":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRentDesc
-                        (userId, LocalDateTime.now()));
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRentDesc(userId,
+                        LocalDateTime.now()));
             case "FUTURE":
                 return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentAfterOrderByStartRentDesc(userId,
                         LocalDateTime.now()));
             case "WAITING":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId, Status.WAITING));
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId,
+                        Status.WAITING));
             case "REJECTED":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId, Status.REJECTED));
+                return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId,
+                        Status.REJECTED));
         }
         throw new UnsupportedStatus("Unknown state: " + status);
     }
