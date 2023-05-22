@@ -63,6 +63,7 @@ public class ItemController {
     public CommentDto addComment(@RequestHeader("X-Sharer-User-Id") Long userId,
                                  @PathVariable Long itemId,
                                  @RequestBody @Valid CommentInputDto commentInputDto) {
+        log.debug("Endpoint request: 'GET items/{itemId}/comment = '" + commentInputDto.getText());
         return service.addComment(userId, itemId, commentInputDto);
     }
 }

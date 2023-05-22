@@ -60,6 +60,6 @@ public class ErrorHandler {
     public Map<String, String> handleUnsupportedStatusException(final UnsupportedStatus exception) {
         log.warn("Error! Unsupported Status, server status: '{}' text message: '{}'",
                 HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
-        return Map.of("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
+        return Map.of("error", exception.getMessage());
     }
 }

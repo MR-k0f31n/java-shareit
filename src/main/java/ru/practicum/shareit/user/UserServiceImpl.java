@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long id) {
         findUserById(id);
-        for (Item item : itemRepository.getItemsByOwnerId(id)) {
+        for (Item item : itemRepository.findAllByOwnerId(id)) {
             itemRepository.deleteById(item.getId());
         }
         log.warn("try delete user by id, user id: '{}'", id);

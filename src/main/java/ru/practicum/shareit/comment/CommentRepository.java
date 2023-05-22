@@ -11,4 +11,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findAllByItemId(Long itemId);
 
     Comment findByAuthorIdAndItemId(Long userId, Long itemId);
+
+    Boolean existsByAuthorIdAndItemId(Long userId, Long itemId);
 }
