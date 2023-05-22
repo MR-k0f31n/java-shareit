@@ -33,10 +33,10 @@ public class ItemMapper {
     }
 
     public static List<ItemDto> toItemDtoList(Iterable<Item> items) {
-        List<ItemDto> ItemsDtoList = new ArrayList<>();
+        List<ItemDto> itemsDtoList = new ArrayList<>();
         for (Item item : items) {
-            ItemsDtoList.add(toItemDto(item));
+            itemsDtoList.add(toItemDto(item));
         }
-        return ItemsDtoList;
+        return itemsDtoList;
     }
 }

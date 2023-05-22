@@ -46,8 +46,8 @@ public class UserServiceImpl implements UserService {
         if (name == null && email == null) {
             return null;
         }
-        final User userForUpdate = repository.findById(id).orElseThrow
-                (() -> new NotFoundException("User id: '" + id + "' not found, please check user id"));
+        final User userForUpdate = repository.findById(id).orElseThrow(
+                () -> new NotFoundException("User id: '" + id + "' not found, please check user id"));
         if (name != null && !name.isBlank()) {
             userForUpdate.setName(name);
             log.trace("name update on ='{}'", name);
@@ -67,8 +67,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto findUserById(Long id) {
         log.warn("Task find user by id, user id: '{}'", id);
-        User user = repository.findById(id).orElseThrow
-                (() -> new NotFoundException("User id: '" + id + "' not found, please check user id"));
+        User user = repository.findById(id).orElseThrow(
+                () -> new NotFoundException("User id: '" + id + "' not found, please check user id"));
         return toUserDto(user);
     }
 

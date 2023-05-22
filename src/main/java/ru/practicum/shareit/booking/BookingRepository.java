@@ -12,25 +12,25 @@ import java.util.Optional;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByBookerIdOrderByStartRentDesc(Long bookerId);
 
-    List<Booking> findAllByBookerIdAndStartRentAfterOrderByStartRentDesc
-            (Long bookerId, LocalDateTime time);
+    List<Booking> findAllByBookerIdAndStartRentAfterOrderByStartRentDesc(Long bookerId, LocalDateTime time);
 
     List<Booking> findAllByBookerIdAndEndRentBeforeOrderByStartRentDesc(Long bookerId, LocalDateTime time);
 
-    List<Booking> findAllByBookerIdAndStartRentBeforeAndEndRentAfterOrderByStartRentDesc
-            (Long bookerId, LocalDateTime time, LocalDateTime time2);
+    List<Booking> findAllByBookerIdAndStartRentBeforeAndEndRentAfterOrderByStartRentDesc(Long bookerId,
+                                                                                         LocalDateTime time,
+                                                                                         LocalDateTime time2);
 
     List<Booking> findAllByBookerIdAndStatusOrderByStartRent(Long bookerId, Status status);
 
     List<Booking> findAllByItemOwnerIdOrderByStartRentDesc(Long ownerId);
 
-    List<Booking> findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent
-            (Long ownerId, LocalDateTime time, LocalDateTime time2);
+    List<Booking> findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent(Long ownerId,
+                                                                                        LocalDateTime time,
+                                                                                        LocalDateTime time2);
 
     List<Booking> findAllByItemOwnerIdAndEndRentBeforeOrderByStartRentDesc(Long ownerId, LocalDateTime time);
 
-    List<Booking> findAllByItemOwnerIdAndStartRentAfterOrderByStartRentDesc
-            (Long ownerId, LocalDateTime time);
+    List<Booking> findAllByItemOwnerIdAndStartRentAfterOrderByStartRentDesc(Long ownerId, LocalDateTime time);
 
     List<Booking> findAllByItemOwnerIdAndStatusOrderByStartRent(Long ownerId, Status status);
 

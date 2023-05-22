@@ -108,9 +108,9 @@ public class ItemServiceImpl implements ItemService {
         if (requestSearch.isEmpty() || requestSearch.isBlank()) {
             return Collections.emptyList();
         }
-        return toItemDtoList(repository.
-                findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailableTrue(requestSearch,
-                        requestSearch));
+        return toItemDtoList(
+                repository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailableTrue(
+                        requestSearch, requestSearch));
     }
 
     @Transactional
