@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.Status;
-import ru.practicum.shareit.comment.Comment;
-import ru.practicum.shareit.comment.CommentDto;
-import ru.practicum.shareit.comment.CommentInputDto;
-import ru.practicum.shareit.comment.CommentRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidatorException;
+import ru.practicum.shareit.item.comment.Comment;
+import ru.practicum.shareit.item.comment.CommentDto;
+import ru.practicum.shareit.item.comment.CommentInputDto;
+import ru.practicum.shareit.item.comment.CommentRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
@@ -20,9 +20,10 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
-import static ru.practicum.shareit.comment.CommentMapper.*;
-import static ru.practicum.shareit.item.ItemMapper.*;
-import static ru.practicum.shareit.user.UserMapper.toUser;
+import static ru.practicum.shareit.item.ItemMapper.dtoToItem;
+import static ru.practicum.shareit.item.ItemMapper.itemToDto;
+import static ru.practicum.shareit.item.comment.CommentMapper.*;
+import static ru.practicum.shareit.user.UserMapper.dtoToUser;
 
 /**
  * @author MR.k0F31n
@@ -40,7 +41,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getAllItemsByOwner(Long id) {
         log.debug("Task get all items by owner");
         userService.findUserById(id);
-        List<ItemDto> itemDtoList = toItemDtoList(repository.findAllByOwnerId(id));
+        List<ItemDto> itemDtoList = itemToDto(repository.findAllByOwnerId(id));
         for (ItemDto itemDto : itemDtoList) {
             setNextAndLastDateBooking(itemDto);
             setComments(itemDto);
@@ -53,9 +54,9 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto createNewItem(ItemDto itemDto, Long ownerId) {
         log.warn("Task create new item, item info: '{}'", itemDto);
         userService.findUserById(ownerId);
-        final Item item = toItem(itemDto, ownerId);
+        final Item item = dtoToItem(itemDto);
         item.getOwner().setId(ownerId);
-        return toItemDto(repository.save(item));
+        return itemToDto(repository.save(item));
     }
 
     @Transactional
@@ -82,13 +83,13 @@ public class ItemServiceImpl implements ItemService {
         if (available != null) {
             itemForUpdate.setAvailable(available);
         }
-        return toItemDto(repository.save(itemForUpdate));
+        return itemToDto(repository.save(itemForUpdate));
     }
 
     @Override
     public ItemDto getItemDtoById(Long id, Long userId) {
         log.warn("Task get item by id, item id: '{}'", id);
-        ItemDto returnItem = toItemDto(getItemById(id));
+        ItemDto returnItem = itemToDto(getItemById(id));
         if (returnItem.getOwner().getId() == userId.longValue()) {
             setNextAndLastDateBooking(returnItem);
         } else {
@@ -115,7 +116,7 @@ public class ItemServiceImpl implements ItemService {
         if (requestSearch.isEmpty() || requestSearch.isBlank()) {
             return Collections.emptyList();
         }
-        return toItemDtoList(
+        return itemToDto(
                 repository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailableTrue(
                         requestSearch, requestSearch));
     }
@@ -131,7 +132,7 @@ public class ItemServiceImpl implements ItemService {
                 LocalDateTime.now())) {
             throw new ValidatorException("User not rent item or rent not finished");
         }
-        final User author = toUser(userService.findUserById(userId));
+        final User author = dtoToUser(userService.findUserById(userId));
         final Item item = getItemById(itemId);
         final Comment newComment = toComment(commentInputDto);
         newComment.setItem(item);
@@ -150,14 +151,14 @@ public class ItemServiceImpl implements ItemService {
                 .findFirstByItemIdAndStartRentAfterAndStatusOrderByStartRentAsc(item.getId(),
                         LocalDateTime.now(),
                         Status.APPROVED)
-                .map(BookingMapper::toBookingItemBookerDto)
+                .map(BookingMapper::bookingToShortDto)
                 .orElse(null));
 
         item.setLastBooking(bookingRepository
                 .findFirstByItemIdAndStartRentBeforeAndStatusOrderByStartRentDesc(item.getId(),
                         LocalDateTime.now(),
                         Status.APPROVED)
-                .map(BookingMapper::toBookingItemBookerDto)
+                .map(BookingMapper::bookingToShortDto)
                 .orElse(null));
     }
 

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.comment;
+package ru.practicum.shareit.item.comment;
 
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;

@@ -11,7 +11,8 @@ import ru.practicum.shareit.item.ItemRepository;
 import javax.transaction.Transactional;
 import java.util.List;
 
-import static ru.practicum.shareit.user.UserMapper.*;
+import static ru.practicum.shareit.user.UserMapper.dtoToUser;
+import static ru.practicum.shareit.user.UserMapper.userToDto;
 
 /**
  * @author MR.k0F31n
@@ -26,15 +27,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> findAllUser() {
         log.debug("Task get all users");
-        return toUserDtoList(repository.findAll());
+        return userToDto(repository.findAll());
     }
 
     @Transactional
     @Override
     public UserDto createNewUser(UserDto userDto) {
         log.warn("Task create new user, user info: '{}'", userDto);
-        User user = repository.save(toUser(userDto));
-        return toUserDto(user);
+        User user = repository.save(dtoToUser(userDto));
+        return userToDto(user);
     }
 
     @Transactional
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
         }
         try {
             log.warn("Task update user, user info after update: '{}'", userForUpdate);
-            return toUserDto(repository.save(userForUpdate));
+            return userToDto(repository.save(userForUpdate));
         } catch (Exception exception) {
             throw new EmailConflictException("Email exist '" + email + "'");
         }
@@ -69,7 +70,7 @@ public class UserServiceImpl implements UserService {
         log.warn("Task find user by id, user id: '{}'", id);
         User user = repository.findById(id).orElseThrow(
                 () -> new NotFoundException("User id: '" + id + "' not found, please check user id"));
-        return toUserDto(user);
+        return userToDto(user);
     }
 
     @Transactional

@@ -10,18 +10,8 @@ import java.util.List;
  * @author MR.k0F31n
  */
 public class BookingMapper {
-    public static Booking toBooking(BookingDto bookingDto) {
-        return new Booking(
-                bookingDto.getId(),
-                bookingDto.getStart(),
-                bookingDto.getEnd(),
-                new Item(),
-                new User(),
-                bookingDto.getStatus()
-        );
-    }
 
-    public static Booking toBooking(BookingInputDTO bookingInputDTO) {
+    public static Booking dtoToBooking(BookingInputDto bookingInputDTO) {
         return new Booking(
                 null,
                 bookingInputDTO.getStart(),
@@ -32,7 +22,7 @@ public class BookingMapper {
         );
     }
 
-    public static BookingDto toBookingDto(Booking booking) {
+    public static BookingDto bookingToDto(Booking booking) {
         return new BookingDto(
                 booking.getId(),
                 booking.getStartRent(),
@@ -44,8 +34,8 @@ public class BookingMapper {
         );
     }
 
-    public static BookingItemBookerDto toBookingItemBookerDto(Booking booking) {
-        return new BookingItemBookerDto(
+    public static BookingShortDto bookingToShortDto(Booking booking) {
+        return new BookingShortDto(
                 booking.getId(),
                 booking.getItem().getId(),
                 booking.getBooker().getId(),
@@ -54,10 +44,10 @@ public class BookingMapper {
         );
     }
 
-    public static List<BookingDto> toBookingDtoList(Iterable<Booking> bookings) {
+    public static List<BookingDto> bookingToDto(Iterable<Booking> bookings) {
         List<BookingDto> bookingDtoList = new ArrayList<>();
         for (Booking booking : bookings) {
-            bookingDtoList.add(toBookingDto(booking));
+            bookingDtoList.add(bookingToDto(booking));
         }
         return bookingDtoList;
     }
