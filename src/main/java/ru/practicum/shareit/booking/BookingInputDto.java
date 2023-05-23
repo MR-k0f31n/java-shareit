@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * @author MR.k0F31n
  */
 @Getter
-public class BookingInputDTO {
+public class BookingInputDto {
     @FutureOrPresent(message = "Rental start time cannot be later now time")
     @NotNull(message = "Start time is empty")
     private LocalDateTime start;

@@ -6,8 +6,8 @@ package ru.practicum.shareit.item;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.comment.CommentDto;
-import ru.practicum.shareit.comment.CommentInputDto;
+import ru.practicum.shareit.item.comment.CommentDto;
+import ru.practicum.shareit.item.comment.CommentInputDto;
 
 import javax.validation.Valid;
 import java.util.List;

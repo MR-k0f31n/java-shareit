@@ -15,7 +15,8 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.practicum.shareit.booking.BookingMapper.*;
+import static ru.practicum.shareit.booking.BookingMapper.bookingToDto;
+import static ru.practicum.shareit.booking.BookingMapper.dtoToBooking;
 
 /**
  * @author MR.k0F31n
@@ -30,37 +31,47 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingDto createNewBooking(BookingInputDTO bookingInputDTODto, Long userId) {
+    public BookingDto createNewBooking(BookingInputDto bookingInputDTODto, Long userId) {
+        log.debug("Task create new booking info: " + bookingInputDTODto + " userID: " + userId);
         Long itemId = bookingInputDTODto.getItemId();
         if (bookingInputDTODto.getStart().isAfter(bookingInputDTODto.getEnd()) ||
                 bookingInputDTODto.getEnd().isEqual(bookingInputDTODto.getStart())) {
+            log.debug("Booking start time before or equals booking end time. Time info: start - " +
+                    bookingInputDTODto.getStart() + " end - " + bookingInputDTODto.getEnd());
             throw new ValidatorException("Booking start time before or equals booking end time");
         }
         final Item item = getItemById(itemId);
         if (userId == item.getOwner().getId().longValue()) {
+            log.debug("don't can rent own items exeption. item info: " + item);
             throw new NotFoundException("you don't can rent own items");
         }
         final User booker = getUserById(userId);
         if (!item.getAvailable()) {
+            log.debug("Item not available item info: " + item);
             throw new ValidatorException("Item not available");
         }
-        final Booking booking = toBooking(bookingInputDTODto);
+        final Booking booking = dtoToBooking(bookingInputDTODto);
         booking.setItem(item);
         booking.setBooker(booker);
         booking.setStatus(Status.WAITING);
-        return toBookingDto(repository.save(booking));
+        log.debug("Task create booking successfully info: " + booking);
+        return bookingToDto(repository.save(booking));
     }
 
     @Transactional
     @Override
     public BookingDto setStatusBooking(Long bookingId, Long userId, Boolean isApproved) {
+        log.debug("Task set status booking.");
         final Booking booking = getBookingById(bookingId);
         if (!booking.getStatus().equals(Status.WAITING)) {
+            log.debug("Booking '{'" + booking + "'}' status not waiting");
             throw new ValidatorException("Booking id '{ " + bookingId + " }' status not waiting");
         }
         final Item item = booking.getItem();
         final User owner = item.getOwner();
         if (!(owner.getId().equals(userId))) {
+            log.debug("Exeption: Not owner reader. getting owner info: " + owner + " getting item owner id = " + item.
+                    getOwner().getId());
             throw new NotFoundException("Not owner reader");
         }
         if (isApproved) {
@@ -68,7 +79,7 @@ public class BookingServiceImpl implements BookingService {
         } else {
             booking.setStatus(Status.REJECTED);
         }
-        final BookingDto bookingDtoAfterUpdate = toBookingDto(repository.save(booking));
+        final BookingDto bookingDtoAfterUpdate = bookingToDto(repository.save(booking));
         log.debug("Booking change status. Booking info after update: " + bookingDtoAfterUpdate);
         return bookingDtoAfterUpdate;
     }
@@ -78,22 +89,22 @@ public class BookingServiceImpl implements BookingService {
         getUserById(userId);
         switch (status) {
             case "ALL":
-                return toBookingDtoList(repository.findAllByItemOwnerIdOrderByStartRentDesc(userId));
+                return bookingToDto(repository.findAllByItemOwnerIdOrderByStartRentDesc(userId));
             case "CURRENT":
                 LocalDateTime now = LocalDateTime.now();
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent(
+                return bookingToDto(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent(
                         userId, now, now));
             case "PAST":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRentDesc(userId,
+                return bookingToDto(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRentDesc(userId,
                         LocalDateTime.now()));
             case "FUTURE":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStartRentAfterOrderByStartRentDesc(userId,
+                return bookingToDto(repository.findAllByItemOwnerIdAndStartRentAfterOrderByStartRentDesc(userId,
                         LocalDateTime.now()));
             case "WAITING":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId,
+                return bookingToDto(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId,
                         Status.WAITING));
             case "REJECTED":
-                return toBookingDtoList(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId,
+                return bookingToDto(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId,
                         Status.REJECTED));
         }
         throw new UnsupportedStatus("Unknown state: " + status);
@@ -104,21 +115,21 @@ public class BookingServiceImpl implements BookingService {
         getUserById(userId);
         switch (status) {
             case "ALL":
-                return toBookingDtoList(repository.findAllByBookerIdOrderByStartRentDesc(userId));
+                return bookingToDto(repository.findAllByBookerIdOrderByStartRentDesc(userId));
             case "CURRENT":
                 LocalDateTime now = LocalDateTime.now();
-                return toBookingDtoList(repository.findAllByBookerIdAndStartRentBeforeAndEndRentAfterOrderByStartRentDesc(
+                return bookingToDto(repository.findAllByBookerIdAndStartRentBeforeAndEndRentAfterOrderByStartRentDesc(
                         userId, now, now));
             case "PAST":
-                return toBookingDtoList(repository.findAllByBookerIdAndEndRentBeforeOrderByStartRentDesc(userId,
+                return bookingToDto(repository.findAllByBookerIdAndEndRentBeforeOrderByStartRentDesc(userId,
                         LocalDateTime.now()));
             case "FUTURE":
-                return toBookingDtoList(repository.findAllByBookerIdAndStartRentAfterOrderByStartRentDesc(userId,
+                return bookingToDto(repository.findAllByBookerIdAndStartRentAfterOrderByStartRentDesc(userId,
                         LocalDateTime.now()));
             case "WAITING":
-                return toBookingDtoList(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.WAITING));
+                return bookingToDto(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.WAITING));
             case "REJECTED":
-                return toBookingDtoList(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.REJECTED));
+                return bookingToDto(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.REJECTED));
         }
         throw new UnsupportedStatus("Unknown state: " + status);
     }
@@ -130,7 +141,7 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getItem().getOwner().getId().equals(userId) && !booking.getBooker().getId().equals(userId)) {
             throw new NotFoundException("Booking for you not found");
         }
-        return toBookingDto(booking);
+        return bookingToDto(booking);
     }
 
     private Booking getBookingById(Long id) {
