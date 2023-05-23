@@ -70,8 +70,8 @@ public class BookingServiceImpl implements BookingService {
         final Item item = booking.getItem();
         final User owner = item.getOwner();
         if (!(owner.getId().equals(userId))) {
-            log.debug("Exeption: Not owner reader. getting owner info: " + owner + " getting item owner id = " + item.
-                    getOwner().getId());
+            log.debug("Exeption: Not owner reader. getting owner info: " + owner + " getting item owner id = " +
+                    item.getOwner().getId());
             throw new NotFoundException("Not owner reader");
         }
         if (isApproved) {
