@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -59,6 +60,22 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleUnsupportedStatusException(final UnsupportedStatus exception) {
         log.warn("Error! Unsupported Status, server status: '{}' text message: '{}'",
+                HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> IncorrectDataExeption(final IncorrectDataExeption exception) {
+        log.warn("Error! server status: '{}' text message: '{}'",
+                HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> ConstraintViolationException(final ConstraintViolationException exception) {
+        log.warn("Error! server status: '{}' text message: '{}'",
                 HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
         return Map.of("error", exception.getMessage());
     }

@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UnsupportedStatus;
@@ -85,51 +87,53 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingByStatusFromOwner(Long userId, String status) {
+    public List<BookingDto> getAllBookingByStatusFromOwner(Long userId, String status, Integer from, Integer size) {
         getUserById(userId);
+        Pageable pageable = PageRequest.of(from / size, size);
         switch (status) {
             case "ALL":
-                return bookingToDto(repository.findAllByItemOwnerIdOrderByStartRentDesc(userId));
+                return bookingToDto(repository.findAllByItemOwnerIdOrderByStartRentDesc(userId, pageable));
             case "CURRENT":
                 LocalDateTime now = LocalDateTime.now();
                 return bookingToDto(repository.findAllByItemOwnerIdAndStartRentBeforeAndEndRentAfterOrderByStartRent(
-                        userId, now, now));
+                        userId, now, now, pageable));
             case "PAST":
                 return bookingToDto(repository.findAllByItemOwnerIdAndEndRentBeforeOrderByStartRentDesc(userId,
-                        LocalDateTime.now()));
+                        LocalDateTime.now(), pageable));
             case "FUTURE":
                 return bookingToDto(repository.findAllByItemOwnerIdAndStartRentAfterOrderByStartRentDesc(userId,
-                        LocalDateTime.now()));
+                        LocalDateTime.now(), pageable));
             case "WAITING":
                 return bookingToDto(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId,
-                        Status.WAITING));
+                        Status.WAITING, pageable));
             case "REJECTED":
                 return bookingToDto(repository.findAllByItemOwnerIdAndStatusOrderByStartRent(userId,
-                        Status.REJECTED));
+                        Status.REJECTED, pageable));
         }
         throw new UnsupportedStatus("Unknown state: " + status);
     }
 
     @Override
-    public List<BookingDto> getAllBookingByStatusFromBooker(Long userId, String status) {
+    public List<BookingDto> getAllBookingByStatusFromBooker(Long userId, String status, Integer from, Integer size) {
         getUserById(userId);
+        Pageable pageable = PageRequest.of(from / size, size);
         switch (status) {
             case "ALL":
-                return bookingToDto(repository.findAllByBookerIdOrderByStartRentDesc(userId));
+                return bookingToDto(repository.findAllByBookerIdOrderByStartRentDesc(userId, pageable));
             case "CURRENT":
                 LocalDateTime now = LocalDateTime.now();
                 return bookingToDto(repository.findAllByBookerIdAndStartRentBeforeAndEndRentAfterOrderByStartRentDesc(
-                        userId, now, now));
+                        userId, now, now, pageable));
             case "PAST":
                 return bookingToDto(repository.findAllByBookerIdAndEndRentBeforeOrderByStartRentDesc(userId,
-                        LocalDateTime.now()));
+                        LocalDateTime.now(), pageable));
             case "FUTURE":
                 return bookingToDto(repository.findAllByBookerIdAndStartRentAfterOrderByStartRentDesc(userId,
-                        LocalDateTime.now()));
+                        LocalDateTime.now(), pageable));
             case "WAITING":
-                return bookingToDto(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.WAITING));
+                return bookingToDto(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.WAITING, pageable));
             case "REJECTED":
-                return bookingToDto(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.REJECTED));
+                return bookingToDto(repository.findAllByBookerIdAndStatusOrderByStartRent(userId, Status.REJECTED, pageable));
         }
         throw new UnsupportedStatus("Unknown state: " + status);
     }
