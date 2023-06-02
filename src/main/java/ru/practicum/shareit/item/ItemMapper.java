@@ -16,7 +16,20 @@ public class ItemMapper {
                 itemDto.getName(),
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
-                new User());
+                new User(),
+                null
+        );
+    }
+
+    public static Item dtoToItem(ItemInputDto dto) {
+        return new Item(
+                null,
+                dto.getName(),
+                dto.getDescription(),
+                dto.getAvailable(),
+                new User(),
+                dto.getRequestId()
+        );
     }
 
     public static ItemDto itemToDto(Item item) {
@@ -28,7 +41,19 @@ public class ItemMapper {
                 item.getOwner(),
                 new BookingShortDto(),
                 new BookingShortDto(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                item.getRequestId()
+        );
+    }
+
+    public static ItemShortDto itemToShortDto(Item item) {
+        return new ItemShortDto(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                item.getOwner().getId(),
+                item.getRequestId()
         );
     }
 
@@ -36,6 +61,14 @@ public class ItemMapper {
         List<ItemDto> itemsDtoList = new ArrayList<>();
         for (Item item : items) {
             itemsDtoList.add(itemToDto(item));
+        }
+        return itemsDtoList;
+    }
+
+    public static List<ItemShortDto> itemToShortDtoList(Iterable<Item> items) {
+        List<ItemShortDto> itemsDtoList = new ArrayList<>();
+        for (Item item : items) {
+            itemsDtoList.add(itemToShortDto(item));
         }
         return itemsDtoList;
     }

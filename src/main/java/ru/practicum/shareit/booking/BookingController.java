@@ -2,9 +2,11 @@ package ru.practicum.shareit.booking;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 
@@ -12,6 +14,7 @@ import java.util.List;
 @RequestMapping(path = "/bookings")
 @AllArgsConstructor
 @Slf4j
+@Validated
 public class BookingController {
     private final BookingService bookingService;
 
@@ -37,18 +40,20 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<BookingDto> getBookingsByBookerId(
-            @RequestHeader("X-Sharer-User-Id") Long bookerId,
-            @RequestParam(name = "state", defaultValue = "ALL") String state) {
+    public List<BookingDto> getBookingsByBookerId(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                  @RequestParam(defaultValue = "10") @Min(1) Integer size,
+                                                  @RequestHeader("X-Sharer-User-Id") Long bookerId,
+                                                  @RequestParam(name = "state", defaultValue = "ALL") String state) {
         log.debug("Endpoint request: 'GET /bookings/state='" + state + "''");
-        return bookingService.getAllBookingByStatusFromBooker(bookerId, state);
+        return bookingService.getAllBookingByStatusFromBooker(bookerId, state, from, size);
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> getBookingsByOwnerId(
-            @RequestHeader("X-Sharer-User-Id") Long ownerId,
-            @RequestParam(name = "state", defaultValue = "ALL") String state) {
+    public List<BookingDto> getBookingsByOwnerId(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                 @RequestParam(defaultValue = "10") @Min(1) Integer size,
+                                                 @RequestHeader("X-Sharer-User-Id") Long ownerId,
+                                                 @RequestParam(name = "state", defaultValue = "ALL") String state) {
         log.debug("Endpoint request: 'GET /bookings/owner/state='" + state + "''");
-        return bookingService.getAllBookingByStatusFromOwner(ownerId, state);
+        return bookingService.getAllBookingByStatusFromOwner(ownerId, state, from, size);
     }
 }

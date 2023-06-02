@@ -1,13 +1,23 @@
--- THIS "КРЯКЭН" NOT FOR H2 TO IM.MEM
---DROP TABLE booking;
---DROP TABLE CASCADE comments;
---DROP TABLE CASCADE items;
---DROP TABLE CASCADE users;
+-- THIS "КРЯКЭН" NOT FOR H2 TO IN.MEMORY
+
+DROP TABLE IF EXISTS request CASCADE;
+DROP TABLE IF EXISTS booking CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS items CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY UNIQUE,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(320) UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS request (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY UNIQUE,
+    description VARCHAR(2000) NOT NULL,
+    requester_id BIGINT NOT NULL,
+    created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    CONSTRAINT fk_request_to_user FOREIGN KEY(requester_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS items (
@@ -16,7 +26,9 @@ CREATE TABLE IF NOT EXISTS items (
     description VARCHAR(2000),
     available BOOLEAN NOT NULL,
     owner_id BIGINT NOT NULL,
-    CONSTRAINT fk_items_to_users FOREIGN KEY(owner_id) REFERENCES users(id)
+    request_id BIGINT,
+    CONSTRAINT fk_items_to_users FOREIGN KEY(owner_id) REFERENCES users(id),
+    CONSTRAINT fk_items_to_request FOREIGN KEY(request_id) REFERENCES request(id)
 );
 
 CREATE TABLE IF NOT EXISTS booking (

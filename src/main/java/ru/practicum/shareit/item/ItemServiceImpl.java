@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -12,6 +14,7 @@ import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.comment.CommentInputDto;
 import ru.practicum.shareit.item.comment.CommentRepository;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
@@ -36,12 +39,14 @@ public class ItemServiceImpl implements ItemService {
     private UserService userService;
     private BookingRepository bookingRepository;
     private CommentRepository commentRepository;
+    private ItemRequestRepository requests;
 
     @Override
-    public List<ItemDto> getAllItemsByOwner(Long id) {
+    public List<ItemDto> getAllItemsByOwner(Long id, Integer from, Integer size) {
         log.debug("Task get all items by owner");
         userService.findUserById(id);
-        List<ItemDto> itemDtoList = itemToDto(repository.findAllByOwnerId(id));
+        Pageable pageable = PageRequest.of(from / size, size);
+        List<ItemDto> itemDtoList = itemToDto(repository.findAllByOwnerId(id, pageable));
         for (ItemDto itemDto : itemDtoList) {
             setNextAndLastDateBooking(itemDto);
             setComments(itemDto);
@@ -51,12 +56,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public ItemDto createNewItem(ItemDto itemDto, Long ownerId) {
+    public ItemDto createNewItem(ItemInputDto itemDto, Long ownerId) {
         log.warn("Task create new item, item info: '{}'", itemDto);
-        userService.findUserById(ownerId);
+        final User user = dtoToUser(userService.findUserById(ownerId));
         final Item item = dtoToItem(itemDto);
-        item.getOwner().setId(ownerId);
-        return itemToDto(repository.save(item));
+        item.setOwner(user);
+        final Item itemBeforeSave = repository.save(item);
+        return itemToDto(itemBeforeSave);
     }
 
     @Transactional
@@ -112,13 +118,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItem(String requestSearch) {
+    public List<ItemDto> searchItem(String requestSearch, Integer from, Integer size) {
         if (requestSearch.isEmpty() || requestSearch.isBlank()) {
             return Collections.emptyList();
         }
+        Pageable pageable = PageRequest.of(from / size, size);
         return itemToDto(
                 repository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailableTrue(
-                        requestSearch, requestSearch));
+                        requestSearch, requestSearch, pageable));
     }
 
     @Transactional

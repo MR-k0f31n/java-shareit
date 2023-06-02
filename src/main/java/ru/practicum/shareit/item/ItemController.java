@@ -5,11 +5,13 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.comment.CommentInputDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 /**
@@ -19,13 +21,16 @@ import java.util.List;
 @RequestMapping(path = "/items")
 @AllArgsConstructor
 @Slf4j
+@Validated
 public class ItemController {
     private ItemService service;
 
     @GetMapping
-    public List<ItemDto> getAllItemsByOwner(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getAllItemsByOwner(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                            @RequestParam(defaultValue = "10") @Min(1) Integer size,
+                                            @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.debug("Endpoint request: 'GET /items'");
-        return service.getAllItemsByOwner(userId);
+        return service.getAllItemsByOwner(userId, from, size);
     }
 
     @GetMapping("/{id}")
@@ -35,7 +40,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto createNewItem(@RequestHeader("X-Sharer-User-Id") Long ownerId, @Valid @RequestBody ItemDto itemDto) {
+    public ItemDto createNewItem(@RequestHeader("X-Sharer-User-Id") Long ownerId, @Valid @RequestBody ItemInputDto itemDto) {
         log.debug("Endpoint request: 'POST /items'");
         return service.createNewItem(itemDto, ownerId);
     }
@@ -54,9 +59,11 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestParam String text) {
+    public List<ItemDto> searchItem(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                    @RequestParam(defaultValue = "10") @Min(1) Integer size,
+                                    @RequestParam String text) {
         log.debug("Endpoint request: 'GET items/search?text='" + text);
-        return service.searchItem(text);
+        return service.searchItem(text, from, size);
     }
 
     @PostMapping("/{itemId}/comment")

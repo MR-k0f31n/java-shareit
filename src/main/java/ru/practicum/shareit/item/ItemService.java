@@ -14,14 +14,14 @@ public interface ItemService {
      * @param ownerId Long Owner id
      * @return All Item format Dto by owner
      */
-    List<ItemDto> getAllItemsByOwner(Long ownerId);
+    List<ItemDto> getAllItemsByOwner(Long ownerId, Integer from, Integer size);
 
     /**
      * @param itemDto object
      * @param ownerId Long id User
      * @return Item format Dto
      */
-    ItemDto createNewItem(ItemDto itemDto, Long ownerId);
+    ItemDto createNewItem(ItemInputDto itemDto, Long ownerId);
 
     /**
      * @param itemDto object
@@ -47,7 +47,7 @@ public interface ItemService {
      * @param searchRequest free search request
      * @return collection Item format Dto
      */
-    List<ItemDto> searchItem(String searchRequest);
+    List<ItemDto> searchItem(String searchRequest, Integer from, Integer size);
 
     /**
      * @param userId          Long user ID from check user
