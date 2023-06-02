@@ -40,8 +40,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequestWithAnswerDto> getAllItemRequestByUserIdWithAnswer(Long id) {
         getUserById(id);
         log.debug("Task - get all request by user owner request");
-        final List<ItemRequestWithAnswerDto> allRequest = objectToDtoListWithAnswer(repository.
-                findAllByRequesterIdOrderByCreatedDateDesc(id));
+        final List<ItemRequestWithAnswerDto> allRequest = objectToDtoListWithAnswer(repository
+                .findAllByRequesterIdOrderByCreatedDateDesc(id));
         for (ItemRequestWithAnswerDto request : allRequest) {
             setAnswerToItemRequest(request);
         }
@@ -53,8 +53,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         getUserById(userId);
         log.debug("Task - get all request from all users");
         Pageable pageable = PageRequest.of(from / size, size);
-        List<ItemRequestWithAnswerDto> result = objectToDtoListWithAnswer(repository.
-                findAllByRequesterIdNotOrderByCreatedDateDesc(userId, pageable));
+        List<ItemRequestWithAnswerDto> result = objectToDtoListWithAnswer(repository
+                .findAllByRequesterIdNotOrderByCreatedDateDesc(userId, pageable));
         for (ItemRequestWithAnswerDto request : result) {
             setAnswerToItemRequest(request);
         }

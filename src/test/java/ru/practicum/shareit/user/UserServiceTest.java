@@ -75,11 +75,11 @@ public class UserServiceTest {
 
         when(userRepository.save(any())).thenReturn(user);
 
-        UserDto User = userService.createNewUser(userDto);
+        UserDto userReturn = userService.createNewUser(userDto);
 
-        Assertions.assertNotNull(User, "пользователь не создался");
-        Assertions.assertEquals(user.getId(), User.getId(), "Неверный ид");
-        Assertions.assertEquals(user.getName(), User.getName(), "Неверный имя");
-        Assertions.assertEquals(user.getEmail(), User.getEmail(), "Неверный емейл");
+        Assertions.assertNotNull(userReturn, "пользователь не создался");
+        Assertions.assertEquals(user.getId(), userReturn.getId(), "Неверный ид");
+        Assertions.assertEquals(user.getName(), userReturn.getName(), "Неверный имя");
+        Assertions.assertEquals(user.getEmail(), userReturn.getEmail(), "Неверный емейл");
     }
 }
