@@ -1,21 +1,5 @@
 package ru.practicum.shareit.user;
 
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-
-import java.util.Arrays;
-import java.util.Collections;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +10,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.exception.NotFoundException;
 
-
 import javax.validation.ValidationException;
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * @author MR.k0F31n
@@ -35,15 +27,14 @@ import javax.validation.ValidationException;
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc
 public class UserControllerTest {
+    private final UserDto user1 = new UserDto(1L, "user1", "user1@mail.com");
+    private final UserDto user2 = new UserDto(2L, "user2", "user2@mail.com");
     @MockBean
     private UserService userService;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper mapper;
-
-    private final UserDto user1 = new UserDto(1L, "user1", "user1@mail.com");
-    private final UserDto user2 = new UserDto(2L, "user2", "user2@mail.com");
 
     @Test
     void testGetAllUsers_empty() throws Exception {

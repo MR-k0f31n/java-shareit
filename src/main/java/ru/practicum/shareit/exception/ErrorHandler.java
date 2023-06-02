@@ -66,7 +66,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> IncorrectDataExeption(final IncorrectDataExeption exception) {
+    public Map<String, String> incorrectDataExeption(final IncorrectDataExeption exception) {
         log.warn("Error! server status: '{}' text message: '{}'",
                 HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
         return Map.of("error", exception.getMessage());
@@ -74,7 +74,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> ConstraintViolationException(final ConstraintViolationException exception) {
+    public Map<String, String> constraintViolationException(final ConstraintViolationException exception) {
         log.warn("Error! server status: '{}' text message: '{}'",
                 HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
         return Map.of("error", exception.getMessage());
