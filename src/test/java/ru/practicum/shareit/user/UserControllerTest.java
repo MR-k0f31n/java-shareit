@@ -37,7 +37,7 @@ public class UserControllerTest {
     private ObjectMapper mapper;
 
     @Test
-    void GetAllUsers_returnEmpty_() throws Exception {
+    void getAllUsers_returnEmpty_() throws Exception {
         when(userService.findAllUser()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/users"))
