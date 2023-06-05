@@ -37,7 +37,7 @@ public class UserControllerTest {
     private ObjectMapper mapper;
 
     @Test
-    void testGetAllUsers_empty() throws Exception {
+    void GetAllUsers_returnEmpty_() throws Exception {
         when(userService.findAllUser()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/users"))
@@ -49,7 +49,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testGetAllUserExpectedLength2_correct() throws Exception {
+    void getAllUser_return2Entries_exist2Users() throws Exception {
         when(userService.findAllUser()).thenReturn(Arrays.asList(user1, user2));
 
         mockMvc.perform(get("/users"))
@@ -66,7 +66,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testCreateUser_correct() throws Exception {
+    void createNewUser_returnDto() throws Exception {
         when(userService.createNewUser(any())).thenReturn((user1));
 
         mockMvc.perform(post("/users")
@@ -83,13 +83,8 @@ public class UserControllerTest {
     }
 
     @Test
-    void testCreateUserWithEmailWrong_expectedError() throws Exception {
+    void createUser_errorEmailNotCorrect() throws Exception {
         UserDto userWrongEmail = new UserDto(1L, "name", "name,com.ru");
-        UserDto userEmailNull = new UserDto(1L, "name", null);
-        UserDto userEmailEmpty = new UserDto(1L, "name", "");
-        UserDto userEmailIsBlank = new UserDto(1L, "name", " ");
-        UserDto userEmailWithBlank = new UserDto(1L, "name", "name @com.ru");
-        when(userService.createNewUser(any())).thenThrow(new ValidationException());
 
         mockMvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userWrongEmail))
@@ -97,11 +92,27 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
 
+        verify(userService, times(0))
+                .createNewUser(any());
+    }
+
+    @Test
+    void createUser_errorEmailIsNull() throws Exception {
+        UserDto userEmailNull = new UserDto(1L, "name", null);
+
         mockMvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userEmailNull))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
+
+        verify(userService, times(0))
+                .createNewUser(any());
+    }
+
+    @Test
+    void createUser_errorEmailIsEmpty() throws Exception {
+        UserDto userEmailEmpty = new UserDto(1L, "name", "");
 
         mockMvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userEmailEmpty))
@@ -109,11 +120,28 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
 
+        verify(userService, times(0))
+                .createNewUser(any());
+    }
+
+    @Test
+    void createUser_errorEmailIsSpace() throws Exception {
+        UserDto userEmailIsBlank = new UserDto(1L, "name", " ");
+
         mockMvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userEmailIsBlank))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
+
+        verify(userService, times(0))
+                .createNewUser(any());
+    }
+
+    @Test
+    void createUser_errorEmailWithSpace() throws Exception {
+        UserDto userEmailWithBlank = new UserDto(1L, "name", "name @com.ru");
+        when(userService.createNewUser(any())).thenThrow(new ValidationException());
 
         mockMvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userEmailWithBlank))
@@ -126,7 +154,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testGetUserById_correct() throws Exception {
+    void getUserById_returnDto() throws Exception {
         when(userService.findUserById(anyLong())).thenReturn(user1);
 
         mockMvc.perform(get("/users/1"))
@@ -140,7 +168,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testGetUserById_error() throws Exception {
+    void getUserById_expectedThrow_code404() throws Exception {
         when(userService.findUserById(anyLong())).thenThrow(new NotFoundException("User not found"));
 
         mockMvc.perform(get("/users/99"))
@@ -151,7 +179,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testUpdateUser() throws Exception {
+    void updateUserName_returnDto() throws Exception {
         final UserDto userUpdate = new UserDto(1L, "name1", "email1@email.ru");
         userUpdate.setName("updateName");
 
@@ -166,7 +194,16 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.name", is(userUpdate.getName())))
                 .andExpect(jsonPath("$.email", is(userUpdate.getEmail())));
 
+        verify(userService, times(1))
+                .updateUser(any(), anyLong());
+    }
+
+    @Test
+    void updateUserEmail_returnDto() throws Exception {
+        final UserDto userUpdate = new UserDto(1L, "name1", "email1@email.ru");
         userUpdate.setEmail("emailUpdate@mail.ru");
+
+        when(userService.updateUser(any(), anyLong())).thenReturn(userUpdate);
 
         mockMvc.perform(patch("/users/{id}", userUpdate.getId())
                         .content(mapper.writeValueAsString(userUpdate))
@@ -177,7 +214,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.name", is(userUpdate.getName())))
                 .andExpect(jsonPath("$.email", is(userUpdate.getEmail())));
 
-        verify(userService, times(2))
+        verify(userService, times(1))
                 .updateUser(any(), anyLong());
     }
 

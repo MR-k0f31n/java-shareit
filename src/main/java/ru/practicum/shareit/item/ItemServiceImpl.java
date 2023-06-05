@@ -61,6 +61,10 @@ public class ItemServiceImpl implements ItemService {
         final User user = dtoToUser(userService.findUserById(ownerId));
         final Item item = dtoToItem(itemDto);
         item.setOwner(user);
+        item.setRequest(null);
+        if (itemDto.getRequestId() != null) {
+            item.setRequest(requests.findById(itemDto.getRequestId()).orElseThrow(() -> new NotFoundException("Request not found")));
+        }
         final Item itemBeforeSave = repository.save(item);
         return itemToDto(itemBeforeSave);
     }

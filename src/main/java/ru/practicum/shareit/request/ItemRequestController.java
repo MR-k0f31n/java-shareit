@@ -24,8 +24,10 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestWithAnswerDto> getAllByUserWitchAnswer(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return service.getAllItemRequestByUserIdWithAnswer(userId);
+    public List<ItemRequestWithAnswerDto> getAllByUserWitchAnswer(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                                  @RequestParam(defaultValue = "10") @Min(1) Integer size,
+                                                                  @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return service.getAllItemRequestByUserIdWithAnswer(userId, from, size);
     }
 
     @GetMapping("/all")

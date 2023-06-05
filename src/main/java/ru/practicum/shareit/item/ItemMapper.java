@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import ru.practicum.shareit.booking.BookingShortDto;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class ItemMapper {
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
                 new User(),
-                null
+                new ItemRequest()
         );
     }
 
@@ -28,7 +29,7 @@ public class ItemMapper {
                 dto.getDescription(),
                 dto.getAvailable(),
                 new User(),
-                dto.getRequestId()
+                new ItemRequest()
         );
     }
 
@@ -42,7 +43,7 @@ public class ItemMapper {
                 new BookingShortDto(),
                 new BookingShortDto(),
                 new ArrayList<>(),
-                item.getRequestId()
+                setIdRequest(item)
         );
     }
 
@@ -53,8 +54,15 @@ public class ItemMapper {
                 item.getDescription(),
                 item.getAvailable(),
                 item.getOwner().getId(),
-                item.getRequestId()
+                setIdRequest(item)
         );
+    }
+
+    private static Long setIdRequest(Item item) {
+        if (item.getRequest() != null) {
+            return item.getRequest().getId();
+        }
+        return null;
     }
 
     public static List<ItemDto> itemToDto(Iterable<Item> items) {
