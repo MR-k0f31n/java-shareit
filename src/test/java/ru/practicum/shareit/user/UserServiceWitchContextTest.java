@@ -56,8 +56,8 @@ public class UserServiceWitchContextTest {
         service.deleteUserById(1L);
 
         assertEquals(0, service.findAllUser().size(), "Юзер не удалился");
-        assertThrows(NotFoundException.class, () -> items.getAllItemsByOwner(user1.getId(), 0, 10)
-                , "User not deleted");
+        assertThrows(NotFoundException.class, () -> items.getAllItemsByOwner(user1.getId(), 0, 10),
+                "User not deleted");
     }
 
     @Test
