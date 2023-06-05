@@ -50,8 +50,7 @@ public class UserServiceImpl implements UserService {
         if (name == null && email == null) {
             return null;
         }
-        final User userForUpdate = repository.findById(id).orElseThrow(
-                () -> new NotFoundException("User id: '" + id + "' not found, please check user id"));
+        final User userForUpdate = dtoToUser(findUserById(id));
         if (name != null && !name.isBlank()) {
             userForUpdate.setName(name);
             log.trace("name update on ='{}'", name);
