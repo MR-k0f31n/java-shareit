@@ -1,44 +1,49 @@
 package ru.practicum.shareit.user;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.ItemRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * @author MR.k0F31n
  */
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceTest {
-    UserRepository userRepository;
-    UserService userService;
-    ItemRepository items;
+    private final UserService service;
 
-    @BeforeEach
-    void beforeEach() {
-        userRepository = Mockito.mock(UserRepository.class);
-        userService = new UserServiceImpl(userRepository, items);
+    @Test
+    void testCreateNewUser_correct() {
+        UserDto userDto = new UserDto(1L, "Name1", "email@mail.com");
+
+        UserDto user = service.createNewUser(userDto);
+
+        assertThat(user.getId(), notNullValue());
+        assertThat(user.getName(), equalTo(userDto.getName()));
+        assertThat(user.getEmail(), equalTo(userDto.getEmail()));
     }
 
     @Test
     void testGetAllUser_correct() {
-        List<User> users = new ArrayList<>();
-        users.add(new User(1L, "name1", "emai1@mail.com"));
-        users.add(new User(2L, "name2", "emai2@mail.com"));
-        users.add(new User(3L, "name3", "emai3@mail.com"));
-        users.add(new User(4L, "name4", "emai4@mail.com"));
-        when(userRepository.findAll()).thenReturn(users);
+        List<UserDto> users = new ArrayList<>();
+        users.add(service.createNewUser(new UserDto(1L, "name1", "emai1@mail.com")));
+        users.add(service.createNewUser(new UserDto(2L, "name2", "emai2@mail.com")));
+        users.add(service.createNewUser(new UserDto(3L, "name3", "emai3@mail.com")));
+        users.add(service.createNewUser(new UserDto(4L, "name4", "emai4@mail.com")));
 
-        List<UserDto> usersDto = userService.findAllUser();
+        List<UserDto> usersDto = service.findAllUser();
 
         Assertions.assertNotNull(usersDto, "Юзеров нет");
         Assertions.assertEquals(4, usersDto.size(), "Количесвто юзеров не совпадает");
@@ -46,11 +51,11 @@ public class UserServiceTest {
 
     @Test
     void testFindById_correct() {
-        User user = new User(1L, "name1", "emai1@mail.com");
+        UserDto user = new UserDto(1L, "name1", "emai1@mail.com");
 
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        service.createNewUser(user);
 
-        UserDto foundUser = userService.findUserById(user.getId());
+        UserDto foundUser = service.findUserById(user.getId());
 
         Assertions.assertNotNull(foundUser, "Пользователь пуст");
         Assertions.assertEquals(user.getId(), foundUser.getId(), "Ид не совпадает");
@@ -60,26 +65,9 @@ public class UserServiceTest {
 
     @Test
     void testFindById_errorNotFound() {
-        when(userRepository.findById(anyLong())).thenThrow(new NotFoundException("User not found"));
-
         Exception exception = Assertions.assertThrows(NotFoundException.class,
-                () -> userService.findUserById(99L));
+                () -> service.findUserById(99L));
 
-        Assertions.assertEquals("User not found", exception.getMessage());
-    }
-
-    @Test
-    void testCreateNewUser_correct() {
-        User user = new User(1L, "name1", "emai1@mail.com");
-        UserDto userDto = new UserDto(null, "name1", "emai1@mail.com");
-
-        when(userRepository.save(any())).thenReturn(user);
-
-        UserDto userReturn = userService.createNewUser(userDto);
-
-        Assertions.assertNotNull(userReturn, "пользователь не создался");
-        Assertions.assertEquals(user.getId(), userReturn.getId(), "Неверный ид");
-        Assertions.assertEquals(user.getName(), userReturn.getName(), "Неверный имя");
-        Assertions.assertEquals(user.getEmail(), userReturn.getEmail(), "Неверный емейл");
+        Assertions.assertEquals("User id: '99' not found, please check user id", exception.getMessage());
     }
 }

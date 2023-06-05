@@ -11,6 +11,7 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 import static ru.practicum.shareit.item.ItemMapper.itemToShortDtoList;
@@ -27,6 +28,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final UserRepository users;
     private final ItemRepository items;
 
+    @Transactional
     @Override
     public ItemRequestDto createNewItemRequest(ItemRequestInputDto input, Long userId) {
         final User user = getUserById(userId);
@@ -37,11 +39,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestWithAnswerDto> getAllItemRequestByUserIdWithAnswer(Long id) {
+    public List<ItemRequestWithAnswerDto> getAllItemRequestByUserIdWithAnswer(Long id, Integer from, Integer size) {
         getUserById(id);
         log.debug("Task - get all request by user owner request");
+        Pageable pageable = PageRequest.of(from / size, size);
         final List<ItemRequestWithAnswerDto> allRequest = objectToDtoListWithAnswer(repository
-                .findAllByRequesterIdOrderByCreatedDateDesc(id));
+                .findAllByRequesterIdOrderByCreatedDateDesc(id, pageable));
         for (ItemRequestWithAnswerDto request : allRequest) {
             setAnswerToItemRequest(request);
         }
