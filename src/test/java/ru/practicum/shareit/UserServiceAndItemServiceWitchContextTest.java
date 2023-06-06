@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -6,16 +6,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.ItemDto;
 import ru.practicum.shareit.item.ItemInputDto;
 import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.user.UserDto;
+import ru.practicum.shareit.user.UserService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class UserServiceWitchContextTest {
+public class UserServiceAndItemServiceWitchContextTest {
     final UserDto user1 = new UserDto(1L, "name1", "emai1@mail.com");
+    final ItemInputDto inputItem = new ItemInputDto("Отвертка", "Отвертка в печень ни один тест не вечен",
+            true, null);
     private final UserService service;
     private final ItemService items;
 
@@ -51,7 +56,7 @@ public class UserServiceWitchContextTest {
         items.createNewItem(item1, user1.getId());
         items.createNewItem(item2, user1.getId());
         assertEquals(1, service.findAllUser().size(), "Юзеров нет");
-        assertEquals(2, items.getAllItemsByOwner(user1.getId(), 0, 10).size(), "Итемов нет");
+        assertEquals(3, items.getAllItemsByOwner(user1.getId(), 0, 10).size(), "Итемов нет");
 
         service.deleteUserById(1L);
 
@@ -68,5 +73,32 @@ public class UserServiceWitchContextTest {
         updateUser.setEmail(null);
 
         assertNull(service.updateUser(updateUser, 1L), "Обновились в null!");
+    }
+
+    @Test
+    void updateItem_AllUpdate_returnDto() {
+        service.createNewUser(user1);
+        ItemDto item1 = items.createNewItem(inputItem, user1.getId());
+        item1.setId(1L);
+        item1.setName("ОтВерТка апргрейд");
+
+        ItemDto itemBeforeUpdateName = items.updateItem(item1, item1.getId(), user1.getId());
+
+        assertEquals(item1.getName(), itemBeforeUpdateName.getName());
+
+        item1.setDescription("Убивает урков на растоянии");
+
+        ItemDto itemBeforeUpdateDesc = items.updateItem(item1, item1.getId(), user1.getId());
+
+        assertEquals(item1.getName(), itemBeforeUpdateDesc.getName());
+        assertEquals(item1.getDescription(), itemBeforeUpdateDesc.getDescription());
+
+        item1.setAvailable(false);
+
+        ItemDto itemBeforeUpdateAvl = items.updateItem(item1, item1.getId(), user1.getId());
+
+        assertEquals(item1.getName(), itemBeforeUpdateAvl.getName());
+        assertEquals(item1.getDescription(), itemBeforeUpdateAvl.getDescription());
+        assertEquals(item1.getAvailable(), itemBeforeUpdateAvl.getAvailable());
     }
 }
