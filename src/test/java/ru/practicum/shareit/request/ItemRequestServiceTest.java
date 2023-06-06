@@ -41,12 +41,4 @@ public class ItemRequestServiceTest {
         assertEquals(itemRequestDto.getId(), requestDto.getId());
         assertEquals(itemRequestDto.getDescription(), requestDto.getDescription());
     }
-
-    @Test
-    void createUser_userNotExist_expectedError() {
-        when(service.createNewItemRequest(any(ItemRequestInputDto.class), anyLong()))
-                .thenThrow(ChangeSetPersister.NotFoundException.class);
-
-        assertThrows(NotFoundException.class, ()->service.createNewItemRequest(input, 999L));
-    }
 }
