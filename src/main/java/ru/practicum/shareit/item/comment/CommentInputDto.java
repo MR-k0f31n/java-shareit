@@ -1,6 +1,6 @@
 package ru.practicum.shareit.item.comment;
 
-import lombok.Getter;
+import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 /**
  * @author MR.k0F31n
  */
-@Getter
+@Data
 public class CommentInputDto {
     @NotNull(message = "Comments is null!")
     @NotBlank(message = "Comments is empty!")
