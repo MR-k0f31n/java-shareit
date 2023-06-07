@@ -34,7 +34,7 @@ public class BookingControllerTest {
     private final BookingDto bookingDto = new BookingDto(1L, inputDto.getStart(), inputDto.getEnd(), inputDto.getItemId(),
             new Item(), new User(), Status.WAITING);
     @MockBean
-    private BookingController service;
+    private BookingService service;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -158,35 +158,35 @@ public class BookingControllerTest {
 
     @Test
     void getBookingById_returnBookingDto() throws Exception {
-        when(service.getBookingById(anyLong(), anyLong())).thenReturn(bookingDto);
+        when(service.getBookingByIdAndUserId(anyLong(), anyLong())).thenReturn(bookingDto);
 
         mockMvc.perform(get("/bookings/{bookingId}", 1L)
                         .header("X-Sharer-User-Id", 1L)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(service, times(1)).getBookingById(anyLong(), anyLong());
+        verify(service, times(1)).getBookingByIdAndUserId(anyLong(), anyLong());
     }
 
     @Test
     void getBookingByBookerId_returnListBookingDto_length1() throws Exception {
-        when(service.getBookingsByBookerId(anyInt(), anyInt(), anyLong(), anyString())).thenReturn(List.of(bookingDto));
+        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(List.of(bookingDto));
 
         mockMvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk());
 
-        verify(service, times(1)).getBookingsByBookerId(anyInt(), anyInt(), anyLong(), anyString());
+        verify(service, times(1)).getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt());
     }
 
     @Test
     void getBookingByOwnerId_returnListDto_length1() throws Exception {
-        when(service.getBookingsByOwnerId(anyInt(), anyInt(), anyLong(), anyString())).thenReturn(List.of(bookingDto));
+        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(List.of(bookingDto));
 
         mockMvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk());
 
-        verify(service, times(1)).getBookingsByOwnerId(anyInt(), anyInt(), anyLong(), anyString());
+        verify(service, times(1)).getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt());
     }
 }

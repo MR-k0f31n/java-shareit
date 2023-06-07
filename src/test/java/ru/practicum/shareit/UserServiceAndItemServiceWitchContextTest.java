@@ -16,6 +16,7 @@ import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,11 +25,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceAndItemServiceWitchContextTest {
 
+    private final UserService service;
+    private final ItemService items;
+
     final UserDto user1 = new UserDto(1L, "name1", "emai1@mail.com");
     final ItemInputDto inputItem = new ItemInputDto("Отвертка", "Отвертка в печень ни один тест не вечен",
             true, null);
-    private final UserService service;
-    private final ItemService items;
     private final BookingInputDto inputDto = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
             LocalDateTime.now().plusMinutes(2), 1L);
 
@@ -75,8 +77,8 @@ public class UserServiceAndItemServiceWitchContextTest {
 
     @Test
     void updateUser_inputNull_returnNull() {
-        service.createNewUser(user1);
         UserDto updateUser = user1;
+        updateUser.setId(1L);
         updateUser.setName(null);
         updateUser.setEmail(null);
 
@@ -87,14 +89,13 @@ public class UserServiceAndItemServiceWitchContextTest {
     void updateItem_AllUpdate_returnDto() {
         service.createNewUser(user1);
         ItemDto item1 = items.createNewItem(inputItem, user1.getId());
-        item1.setId(1L);
         item1.setName("ОтВерТка апргрейд");
 
         ItemDto itemBeforeUpdateName = items.updateItem(item1, item1.getId(), user1.getId());
 
         assertEquals(item1.getName(), itemBeforeUpdateName.getName());
 
-        item1.setDescription("Убивает урков на растоянии");
+        item1.setDescription("Убивает на растоянии");
 
         ItemDto itemBeforeUpdateDesc = items.updateItem(item1, item1.getId(), user1.getId());
 
@@ -114,7 +115,6 @@ public class UserServiceAndItemServiceWitchContextTest {
     void updateItem_userNotOwner_expectedError() {
         service.createNewUser(user1);
         ItemDto item1 = items.createNewItem(inputItem, user1.getId());
-        item1.setId(1L);
         item1.setName("ОтВерТка апргрейд");
 
         assertThrows(NotFoundException.class, () -> items.updateItem(item1, item1.getId(), 2L));
@@ -131,6 +131,39 @@ public class UserServiceAndItemServiceWitchContextTest {
     }
 
     @Test
+    void getItem_returnDto() {
+        service.createNewUser(user1);
+        ItemDto item1 = items.createNewItem(inputItem, user1.getId());
+        ItemDto findItem = items.getItemDtoById(item1.getId(), user1.getId());
+        assertEquals(item1.getName(), findItem.getName());
+        assertEquals(item1.getDescription(), findItem.getDescription());
+        items.deleteItem(item1.getId(), user1.getId());
+    }
+
+    @Test
+    void getItemNotOwner_returnDto() {
+        UserDto user = service.createNewUser(user1);
+        UserDto user2 = new UserDto(2L, "name2", "emai2@mail.com");
+        service.createNewUser(user2);
+        ItemDto item1 = items.createNewItem(inputItem, user.getId());
+        ItemDto findItem = items.getItemDtoById(item1.getId(), user2.getId());
+        assertEquals(item1.getName(), findItem.getName());
+        assertEquals(item1.getDescription(), findItem.getDescription());
+        items.deleteItem(item1.getId(), user.getId());
+        service.deleteUserById(user2.getId());
+    }
+
+    @Test
+    void searchItem_returnDto() {
+        service.createNewUser(user1);
+        ItemDto item1 = items.createNewItem(inputItem, user1.getId());
+        List<ItemDto> findItem = items.searchItem("ОтВЕРТка", 0, 10);
+        assertEquals(item1.getName(), findItem.get(0).getName());
+        assertEquals(item1.getDescription(), findItem.get(0).getDescription());
+        items.deleteItem(item1.getId(), user1.getId());
+    }
+
+    @Test
     void addComment_textIsEmpty() {
         CommentInputDto input = new CommentInputDto();
         input.setText(" ");
@@ -142,5 +175,16 @@ public class UserServiceAndItemServiceWitchContextTest {
         CommentInputDto input = new CommentInputDto();
         input.setText("User not rent Item");
         assertThrows(ValidatorException.class, () -> items.addComment(1L, 1L, input));
+    }
+
+    @Test
+    void deleteItemItem() {
+        ItemDto itemFromDelete = items.createNewItem(new ItemInputDto("ItemFromDelete", "from delete desc", true, null), 1L);
+        items.deleteItem(itemFromDelete.getId(), 1L);
+    }
+
+    @Test
+    void deleteItemItem_userNotOwner_expectedError() {
+        assertThrows(NotFoundException.class, () -> items.deleteItem(1L, 999L));
     }
 }
