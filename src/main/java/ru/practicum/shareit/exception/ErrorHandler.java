@@ -53,7 +53,7 @@ public class ErrorHandler {
     public Map<String, String> handlerEmailConflict(final EmailConflictException exception) {
         log.warn("Error! Validation fault, server status: '{}' text message: '{}'",
                 HttpStatus.CONFLICT, exception.getMessage());
-        return Map.of("EMAIL ERROR. ", "This email exist");
+        return Map.of("EMAIL ERROR", "This email exist");
     }
 
     @ExceptionHandler
@@ -67,14 +67,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> incorrectDataExeption(final IncorrectDataExeption exception) {
-        log.warn("Error! server status: '{}' text message: '{}'",
-                HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
-        return Map.of("error", exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> constraintViolationException(final ConstraintViolationException exception) {
         log.warn("Error! server status: '{}' text message: '{}'",
                 HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
         return Map.of("error", exception.getMessage());

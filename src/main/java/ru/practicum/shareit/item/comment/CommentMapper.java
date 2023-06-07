@@ -11,15 +11,6 @@ import java.util.List;
  * @author MR.k0F31n
  */
 public class CommentMapper {
-    public static Comment toComment(CommentDto commentDto) {
-        return new Comment(
-                commentDto.getId(),
-                commentDto.getText(),
-                new Item(),
-                new User(),
-                commentDto.getCreated()
-        );
-    }
 
     public static Comment toComment(CommentInputDto commentInputDto) {
         return new Comment(
