@@ -25,12 +25,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceAndItemServiceWitchContextTest {
 
-    private final UserService service;
-    private final ItemService items;
-
     final UserDto user1 = new UserDto(1L, "name1", "emai1@mail.com");
     final ItemInputDto inputItem = new ItemInputDto("Отвертка", "Отвертка в печень ни один тест не вечен",
             true, null);
+    private final UserService service;
+    private final ItemService items;
     private final BookingInputDto inputDto = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
             LocalDateTime.now().plusMinutes(2), 1L);
 
