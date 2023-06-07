@@ -47,11 +47,12 @@ public class BookingServiceImpl implements BookingService {
             log.debug("don't can rent own items exeption. item info: " + item);
             throw new NotFoundException("you don't can rent own items");
         }
-        final User booker = getUserById(userId);
         if (!item.getAvailable()) {
             log.debug("Item not available item info: " + item);
             throw new ValidatorException("Item not available");
         }
+        final User booker = getUserById(userId);
+
         final Booking booking = dtoToBooking(bookingInputDTODto);
         booking.setItem(item);
         booking.setBooker(booker);

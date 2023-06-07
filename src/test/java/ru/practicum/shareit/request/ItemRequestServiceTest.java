@@ -6,14 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import ru.practicum.shareit.exception.NotFoundException;
-
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
@@ -24,6 +22,8 @@ import static org.mockito.Mockito.when;
 public class ItemRequestServiceTest {
     @MockBean
     private final ItemRequestService service;
+    @MockBean
+    private final ItemRequestRepository repository;
 
     private final ItemRequestDto itemRequestDto = new ItemRequestDto(1L, "Need item", null,
             LocalDateTime.now());
@@ -32,7 +32,7 @@ public class ItemRequestServiceTest {
             "Need item", LocalDateTime.now(), new ArrayList<>());
 
     @Test
-    void createNewRequest_returnDto () {
+    void createNewRequest_returnDto() {
         when(service.createNewItemRequest(any(ItemRequestInputDto.class), anyLong())).thenReturn(itemRequestDto);
 
         ItemRequestDto requestDto = service.createNewItemRequest(input, 1L);

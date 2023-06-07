@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 
@@ -43,7 +44,7 @@ public class BookingController {
     public List<BookingDto> getBookingsByBookerId(@RequestParam(defaultValue = "0") @Min(0) Integer from,
                                                   @RequestParam(defaultValue = "10") @Min(1) Integer size,
                                                   @RequestHeader("X-Sharer-User-Id") Long bookerId,
-                                                  @RequestParam(name = "state", defaultValue = "ALL") String state) {
+                                                  @RequestParam(name = "state", defaultValue = "ALL") @NotBlank String state) {
         log.debug("Endpoint request: 'GET /bookings/state='" + state + "''");
         return bookingService.getAllBookingByStatusFromBooker(bookerId, state, from, size);
     }
@@ -52,7 +53,7 @@ public class BookingController {
     public List<BookingDto> getBookingsByOwnerId(@RequestParam(defaultValue = "0") @Min(0) Integer from,
                                                  @RequestParam(defaultValue = "10") @Min(1) Integer size,
                                                  @RequestHeader("X-Sharer-User-Id") Long ownerId,
-                                                 @RequestParam(name = "state", defaultValue = "ALL") String state) {
+                                                 @RequestParam(name = "state", defaultValue = "ALL") @NotBlank String state) {
         log.debug("Endpoint request: 'GET /bookings/owner/state='" + state + "''");
         return bookingService.getAllBookingByStatusFromOwner(ownerId, state, from, size);
     }
