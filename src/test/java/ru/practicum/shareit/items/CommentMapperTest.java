@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -30,5 +31,17 @@ public class CommentMapperTest {
         CommentDto commentDto = CommentMapper.toCommentDto(comment);
 
         assertEquals(comment.getComment(), commentDto.getText());
+    }
+
+    @Test
+    void toCommentDtoList() {
+        Comment comment = new Comment(1L, "text", new Item(), new User(), LocalDateTime.now());
+        Comment comment2 = new Comment(2L, "text2", new Item(), new User(), LocalDateTime.now());
+
+        List<Comment> comments = List.of(comment, comment2);
+
+        List<CommentDto> commentDtos = CommentMapper.toCommentDtoList(comments);
+
+        assertEquals(2, commentDtos.size());
     }
 }

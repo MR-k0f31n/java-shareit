@@ -144,10 +144,13 @@ public class UserServiceAndItemServiceWitchContextTest {
         UserDto user = service.createNewUser(user1);
         UserDto user2 = new UserDto(2L, "name2", "emai2@mail.com");
         service.createNewUser(user2);
+
         ItemDto item1 = items.createNewItem(inputItem, user.getId());
         ItemDto findItem = items.getItemDtoById(item1.getId(), user2.getId());
+
         assertEquals(item1.getName(), findItem.getName());
         assertEquals(item1.getDescription(), findItem.getDescription());
+
         items.deleteItem(item1.getId(), user.getId());
         service.deleteUserById(user2.getId());
     }
