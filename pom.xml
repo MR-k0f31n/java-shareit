@@ -92,7 +92,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
-        </plugins>
+		</plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
