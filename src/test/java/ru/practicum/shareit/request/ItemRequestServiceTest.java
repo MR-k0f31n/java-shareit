@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemDto;
 import ru.practicum.shareit.item.ItemInputDto;
 import ru.practicum.shareit.item.ItemService;
@@ -15,6 +16,7 @@ import ru.practicum.shareit.user.UserService;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -42,18 +44,28 @@ public class ItemRequestServiceTest {
 
     @DirtiesContext
     @Test
-    void createNewRequest_createAnswer_returnDtoWitchAnswer() {
+    void getAllItemRequestFromOtherUsers_returnRequestWitchAnswer() {
         UserDto user = userService.createNewUser(inputUser);
         ItemRequestDto request = requestService.createNewItemRequest(inputRequest, user.getId());
+
         ItemDto item = itemService.createNewItem(new ItemInputDto("Its need", "100%", true,
                 request.getId()), user.getId());
 
-        ItemRequestWithAnswerDto request1 = requestService.getAllItemRequestFromOtherUsers(user.getId(), request.getId());
+        ItemRequestWithAnswerDto requests = requestService.getAllItemRequestFromOtherUsers(request.getId(), user.getId());
 
-        assertEquals(request1.getItems().get(0).getId(), item.getId());
-        assertEquals(request1.getItems().get(0).getName(), item.getName());
+        assertEquals(requests.getItems().get(0).getId(), item.getId());
+        assertEquals(requests.getItems().get(0).getName(), item.getName());
     }
 
+    @DirtiesContext
+    @Test
+    void getAllItemRequestFromOtherUsers_requestNotExist() {
+        UserDto user = userService.createNewUser(inputUser);
+        ItemRequestDto request = requestService.createNewItemRequest(inputRequest, user.getId());
+
+        assertThrows(NotFoundException.class, () -> requestService
+                .getAllItemRequestFromOtherUsers(999L, user.getId()));
+    }
 
     @DirtiesContext
     @Test
