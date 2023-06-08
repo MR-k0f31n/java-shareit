@@ -5,137 +5,142 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
+import ru.practicum.shareit.booking.BookingInputDto;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidatorException;
+import ru.practicum.shareit.item.ItemInputDto;
+import ru.practicum.shareit.item.ItemService;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
 
-/**
- * @author MR.k0F31n
- */
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceTest {
+
     final UserDto user1 = new UserDto(1L, "name1", "emai1@mail.com");
-    final UserDto user2 = new UserDto(2L, "name2", "emai2@mail.com");
-    final UserDto user3 = new UserDto(3L, "name3", "email3@mail.com");
-    final UserDto user4 = new UserDto(4L, "name4", "email4@mail.com");
-    @MockBean
+    final ItemInputDto inputItem = new ItemInputDto("Отвертка", "Отвертка в печень ни один тест не вечен",
+            true, null);
     private final UserService service;
+    private final ItemService items;
+    private final BookingInputDto inputDto = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
+            LocalDateTime.now().plusMinutes(2), 1L);
 
     @Test
-    void createNewUser_returnUserDto() {
-        when(service.createNewUser(any(UserDto.class))).thenReturn(user1);
+    void updateUserEmailInContext_expectedCorrect_returnUserDtoBeforeUpdate() {
+        service.createNewUser(user1);
 
+        UserDto updateUser = user1;
+        updateUser.setEmail("emailUpdate@mail.com");
+
+        UserDto userBeforeUpdate = service.updateUser(updateUser, updateUser.getId());
+
+        assertEquals(updateUser.getEmail(), userBeforeUpdate.getEmail(), "Email not update");
+    }
+
+    @Test
+    void updateUser_nameIsBlank_notUpdate() {
         UserDto user = service.createNewUser(user1);
 
-        assertThat(user.getId(), notNullValue());
-        assertThat(user.getName(), equalTo(user1.getName()));
-        assertThat(user.getEmail(), equalTo(user1.getEmail()));
+        UserDto updateUser = user1;
+        updateUser.setName("");
+
+        UserDto userBeforeUpdate = service.updateUser(updateUser, user.getId());
+
+        assertEquals("name1", userBeforeUpdate.getName());
+    }
+
+    @DirtiesContext
+    @Test
+    void updateUser_nameIsNull_notUpdate() {
+        UserDto userOne = new UserDto(1L, "name1", "emai11120@mail.com");
+        UserDto user = service.createNewUser(userOne);
+
+        UserDto updateUser = userOne;
+        updateUser.setName(null);
+
+        UserDto userBeforeUpdate = service.updateUser(updateUser, user.getId());
+
+        assertEquals("name1", userBeforeUpdate.getName());
     }
 
     @Test
-    void getAllUsers_returnListDto_existLength4() {
-        List<UserDto> users = new ArrayList<>();
-        users.add(user1);
-        users.add(user2);
-        users.add(user3);
-        users.add(user4);
+    void updateUser_emailIsBlank_notUpdate() {
+        UserDto user = service.createNewUser(user1);
 
-        when(service.findAllUser()).thenReturn(users);
+        UserDto updateUser = user1;
+        updateUser.setEmail("");
 
-        List<UserDto> usersDto = service.findAllUser();
+        UserDto userBeforeUpdate = service.updateUser(updateUser, updateUser.getId());
 
-        assertNotNull(usersDto, "Юзеров нет");
-        assertEquals(4, usersDto.size(), "Количесвто юзеров не совпадает");
+        assertEquals(user.getEmail(), userBeforeUpdate.getEmail());
     }
 
     @Test
-    void searchUserById_returnUserOne_existUserOne() {
-        UserDto user = new UserDto(1L, "name1", "emai1@mail.com");
+    void updateUser_emailIsNull_notUpdate() {
+        UserDto user = service.createNewUser(user1);
 
-        when(service.findUserById(anyLong())).thenReturn(user);
+        UserDto updateUser = user1;
+        updateUser.setEmail(null);
 
-        UserDto foundUser = service.findUserById(user.getId());
+        UserDto userBeforeUpdate = service.updateUser(updateUser, updateUser.getId());
 
-        assertNotNull(foundUser, "Пользователь пуст");
-        assertEquals(user.getId(), foundUser.getId(), "Ид не совпадает");
-        assertEquals(user.getName(), foundUser.getName(), "имя не совпадает");
-        assertEquals(user.getEmail(), foundUser.getEmail(), "емейл не совпадает");
+        assertEquals(user.getEmail(), userBeforeUpdate.getEmail());
+    }
+
+    @DirtiesContext
+    @Test
+    void updateUser_emailIsExist_expectedError() {
+        UserDto userOne = service.createNewUser(user1);
+        UserDto userDto = new UserDto(2L, "name2", "emai@mail.cin");
+        UserDto userTwo = service.createNewUser(userDto);
+        userTwo.setEmail(userOne.getEmail());
+
+        assertThrows(Exception.class, () -> service.updateUser(userTwo, userTwo.getId()));
     }
 
     @Test
-    void searchUserById_expectedThrow_user99notExist() {
-        when(service.findUserById(anyLong())).thenThrow(new NotFoundException("User not found"));
+    void updateUser_allNull_returnNull() {
+        UserDto user = service.createNewUser(user1);
 
-        assertThrows(NotFoundException.class, () -> service.findUserById(99L), "Юзер 99 обнаружен");
+        UserDto updateUser = user1;
+        updateUser.setEmail(null);
+        updateUser.setName(null);
+
+        UserDto userBeforeUpdate = service.updateUser(updateUser, updateUser.getId());
+
+        assertNull(userBeforeUpdate);
     }
 
     @Test
-    void updateUserWithEmailWrong_emailNull_expectedError() {
-        when(service.updateUser(any(UserDto.class), anyLong())).thenThrow(ValidatorException.class);
+    void updateUserNameInContext_expectedCorrect_returnUserDtoBeforeUpdate() {
+        service.createNewUser(user1);
 
-        UserDto user = user1;
-        user.setEmail(null);
-
-        assertThrows(ValidatorException.class, () -> service.updateUser(user, 1L));
-    }
-
-    @Test
-    void updateUserWithEmailWrong_emailSpace_expectedError() {
-        when(service.updateUser(any(UserDto.class), anyLong())).thenThrow(ValidatorException.class);
-
-        UserDto user = user1;
-        user.setEmail(" ");
-
-        assertThrows(ValidatorException.class, () -> service.updateUser(user, 1L));
-    }
-
-    @Test
-    void updateUserWithEmailWrong_emailEmpty_expectedError() {
-        when(service.updateUser(any(UserDto.class), anyLong())).thenThrow(ValidatorException.class);
-
-        UserDto user = user1;
-        user.setEmail("");
-
-        assertThrows(ValidatorException.class, () -> service.updateUser(user, 1L));
-    }
-
-    @Test
-    void updateUserWithEmailWrong_emailWithSpace_expectedError() {
-        when(service.updateUser(any(UserDto.class), anyLong())).thenThrow(ValidatorException.class);
-
-        UserDto user = user1;
-        user.setEmail("email @mail.com");
-
-        assertThrows(ValidatorException.class, () -> service.updateUser(user, 1L));
-    }
-
-    @Test
-    void updateUser_userNotExist_expectedError() {
-        when(service.updateUser(any(UserDto.class), anyLong())).thenThrow(NotFoundException.class);
-
-        assertThrows(NotFoundException.class, () -> service.updateUser(user1, 99L));
-    }
-
-    @Test
-    void updateUserName_returnUSerDto() {
         UserDto updateUser = user1;
         updateUser.setName("Update name");
 
-        when(service.updateUser(any(UserDto.class), anyLong())).thenReturn(updateUser);
+        UserDto userBeforeUpdate = service.updateUser(updateUser, updateUser.getId());
 
-        assertEquals(updateUser.getName(), service.updateUser(updateUser, 1L).getName(), "Name not update");
+        assertEquals(updateUser.getName(), userBeforeUpdate.getName(), "Name not update");
+    }
+
+
+    @Test
+    void deleteUser_correct() {
+        service.createNewUser(user1);
+        ItemInputDto item1 = new ItemInputDto("name1", "descr1", true, null);
+        ItemInputDto item2 = new ItemInputDto("name1", "descr1", true, null);
+        items.createNewItem(item1, user1.getId());
+        items.createNewItem(item2, user1.getId());
+        assertEquals(1, service.findAllUser().size(), "Юзеров нет");
+        assertEquals(2, items.getAllItemsByOwner(user1.getId(), 0, 10).size(), "Итемов нет");
+
+        service.deleteUserById(1L);
+
+        assertEquals(0, service.findAllUser().size(), "Юзер не удалился");
+        assertThrows(NotFoundException.class, () -> items.getAllItemsByOwner(user1.getId(), 0, 10),
+                "User not deleted");
     }
 }

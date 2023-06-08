@@ -1,239 +1,390 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UnsupportedStatus;
 import ru.practicum.shareit.exception.ValidatorException;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.item.ItemDto;
+import ru.practicum.shareit.item.ItemInputDto;
+import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.user.UserDto;
+import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author MR.k0F31n
  */
-
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class BookingServiceTest {
-    @MockBean
-    private final BookingService service;
-    @MockBean
-    private final BookingRepository repository;
 
+    private final BookingService bookingService;
+    private final ItemService itemService;
+    private final UserService userService;
+    private UserDto owner;
+    private UserDto booker;
+    private ItemDto item;
+    private BookingDto booking;
 
-    private final BookingInputDto inputDto = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
-            LocalDateTime.now().plusMinutes(2), 1L);
-    private final BookingDto bookingDto = new BookingDto(1L, inputDto.getStart(), inputDto.getEnd(), inputDto.getItemId(),
-            new Item(), new User(), Status.WAITING);
-    private final Booking booking = new Booking(1L, inputDto.getStart(), inputDto.getEnd(), new Item(), new User(),
-            Status.WAITING);
-
-    @Test
-    void createNewBooking_expectedCorrect_returnDto() {
-        when(service.createNewBooking(any(BookingInputDto.class), anyLong())).thenReturn(bookingDto);
-
-        BookingDto booking = service.createNewBooking(inputDto, 1L);
-
-        assertNotNull(booking);
-        assertEquals(bookingDto.getId(), booking.getId());
-        assertEquals(bookingDto.getItemId(), booking.getItemId());
-        assertEquals(bookingDto.getStatus(), booking.getStatus());
+    @BeforeEach
+    void beforeEach() {
+        owner = userService.createNewUser(new UserDto(null, "name1", "email@mail.com"));
+        booker = userService.createNewUser(new UserDto(null, "name2", "email2@mail.ru"));
+        item = itemService.createNewItem(new ItemInputDto("Отвертка", "Электрическая", true,
+                null), owner.getId());
+        booking = bookingService.createNewBooking(new BookingInputDto(LocalDateTime.now().plusSeconds(1),
+                LocalDateTime.now().plusSeconds(3), item.getId()), booker.getId());
     }
 
+    @DirtiesContext
     @Test
-    void createNewBooking_bookingTimeRentIsNotCorrect_expectedError() {
-        when(service.createNewBooking(any(BookingInputDto.class), anyLong())).thenThrow(ValidatorException.class);
-
-        final BookingInputDto booking = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
-                LocalDateTime.now().minusMinutes(2), 1L);
-
-        assertThrows(ValidatorException.class, () -> service.createNewBooking(booking, 1L));
+    void checkCreateNewItemUserAndBooking() {
+        assertEquals(booking.getId(), 1);
+        assertEquals(booking.getStatus(), Status.WAITING);
+        assertEquals(booking.getBooker().getId(), booker.getId());
+        assertEquals(booking.getBooker().getName(), booker.getName());
+        assertEquals(booking.getItem().getId(), item.getId());
+        assertEquals(booking.getItem().getName(), item.getName());
     }
 
+    @DirtiesContext
     @Test
-    void createNewBooking_bookingCreatedOwnerItems_expectedError() {
-        when(service.createNewBooking(any(BookingInputDto.class), anyLong())).thenThrow(NotFoundException.class);
+    void createNewBooking_tryBookingItemOwned_expectedError() {
+        ItemDto newItemDto = itemService.createNewItem(new ItemInputDto("Отвертка", "Электрическая с батарейкой",
+                true, null), owner.getId());
+        BookingInputDto newBooking = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
+                LocalDateTime.now().plusMinutes(2), newItemDto.getId());
 
-        assertThrows(NotFoundException.class, () -> service.createNewBooking(inputDto, 2L));
+        assertThrows(NotFoundException.class, () -> bookingService.createNewBooking(newBooking, owner.getId()));
     }
 
+    @DirtiesContext
     @Test
-    void setStatusBooking_returnBookingDto() {
-        when(service.setStatusBooking(anyLong(), anyLong(), anyBoolean())).thenReturn(bookingDto);
+    void createNewBooking_endDateBookingNotCorrect_expectedError() {
+        ItemDto newItemDto = itemService.createNewItem(new ItemInputDto("Отвертка", "Электрическая с батарейкой",
+                true, null), owner.getId());
+        BookingInputDto newBooking = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
+                LocalDateTime.now().plusSeconds(3), newItemDto.getId());
 
-        BookingDto booking = service.setStatusBooking(1L, 1L, true);
-
-        assertNotNull(booking);
-        assertEquals(bookingDto.getId(), booking.getId());
-        assertEquals(bookingDto.getItemId(), booking.getItemId());
-        assertEquals(bookingDto.getStatus(), booking.getStatus());
+        assertThrows(ValidatorException.class, () -> bookingService.createNewBooking(newBooking, booker.getId()));
     }
 
+    @DirtiesContext
     @Test
-    void createNewBooking_bookingStatusNotWaiting_expectedError() {
-        when(service.setStatusBooking(anyLong(), anyLong(), anyBoolean())).thenThrow(ValidatorException.class);
+    void createNewBooking_staartDateBookingNotCorrect_expectedError() {
+        ItemDto newItemDto = itemService.createNewItem(new ItemInputDto("Отвертка", "Электрическая с батарейкой",
+                true, null), owner.getId());
+        BookingInputDto newBooking = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
+                LocalDateTime.now().minusMinutes(2), newItemDto.getId());
 
-        assertThrows(ValidatorException.class, () -> service.setStatusBooking(1L, 1L, true));
+        assertThrows(ValidatorException.class, () -> bookingService.createNewBooking(newBooking, booker.getId()));
     }
 
+    @DirtiesContext
     @Test
-    void createNewBooking_ownerApproveBooking_expectedError() {
-        when(service.setStatusBooking(anyLong(), anyLong(), anyBoolean())).thenThrow(NotFoundException.class);
+    void createNewBooking_itemNotAvailable_expectedError() {
+        ItemDto newItemDto = itemService.createNewItem(new ItemInputDto("Отвертка", "Электрическая с батарейкой",
+                false, null), owner.getId());
+        BookingInputDto newBooking = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
+                LocalDateTime.now().plusMinutes(2), newItemDto.getId());
 
-        assertThrows(NotFoundException.class, () -> service.setStatusBooking(1L, 1L, true));
+        assertThrows(ValidatorException.class, () -> bookingService.createNewBooking(newBooking, booker.getId()));
     }
 
+    @DirtiesContext
     @Test
-    void getBookingById_returnDto() {
-        when(service.getBookingByIdAndUserId(anyLong(), anyLong())).thenReturn(bookingDto);
+    void createNewBooking_itemNotFound_expectedError() {
+        BookingInputDto newBooking = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
+                LocalDateTime.now().plusMinutes(2), 99L);
 
-        BookingDto booking = service.getBookingByIdAndUserId(1L, 1L);
-
-        assertNotNull(booking);
-        assertEquals(bookingDto.getId(), booking.getId());
-        assertEquals(bookingDto.getItemId(), booking.getItemId());
-        assertEquals(bookingDto.getStatus(), booking.getStatus());
+        assertThrows(NotFoundException.class, () -> bookingService.createNewBooking(newBooking, booker.getId()));
     }
 
+    @DirtiesContext
+    @Test
+    void getBookingById_bookingExist_returnBookingDto() {
+        BookingDto booking1 = bookingService.getBookingByIdAndUserId(booking.getId(), booker.getId());
+
+        assertEquals(booking1.getId(), 1);
+        assertEquals(booking1.getStatus(), Status.WAITING);
+        assertEquals(booking1.getBooker().getId(), booker.getId());
+        assertEquals(booking1.getBooker().getName(), booker.getName());
+        assertEquals(booking1.getItem().getId(), item.getId());
+        assertEquals(booking1.getItem().getName(), item.getName());
+    }
+
+    @DirtiesContext
+    @Test
+    void getBookingById_bookingNotExist_notFound() {
+        assertThrows(NotFoundException.class, () -> bookingService.getBookingByIdAndUserId(999L, 1L));
+    }
+
+    @DirtiesContext
+    @Test
+    void setStatusBookingReject_bookingExist_returnDto() {
+
+        BookingDto booking1 = bookingService.setStatusBooking(booking.getId(), owner.getId(), false);
+
+        assertEquals(booking1.getId(), 1);
+        assertEquals(booking1.getStatus(), Status.REJECTED);
+        assertEquals(booking1.getBooker().getId(), booker.getId());
+        assertEquals(booking1.getBooker().getName(), booker.getName());
+        assertEquals(booking1.getItem().getId(), item.getId());
+        assertEquals(booking1.getItem().getName(), item.getName());
+    }
+
+    @DirtiesContext
+    @Test
+    void setStatusBookingApproved_bookingExist_returnDto() {
+
+        BookingDto booking1 = bookingService.setStatusBooking(booking.getId(), owner.getId(), true);
+
+        assertEquals(booking1.getId(), 1);
+        assertEquals(booking1.getStatus(), Status.APPROVED);
+        assertEquals(booking1.getBooker().getId(), booker.getId());
+        assertEquals(booking1.getBooker().getName(), booker.getName());
+        assertEquals(booking1.getItem().getId(), item.getId());
+        assertEquals(booking1.getItem().getName(), item.getName());
+    }
+
+    @DirtiesContext
+    @Test
+    void setStatusBooking_tryNotOwnerSetStatus_expectedError() {
+        assertThrows(NotFoundException.class, () -> bookingService.setStatusBooking(booking.getId(), booker.getId(),
+                true));
+        assertThrows(NotFoundException.class, () -> bookingService.setStatusBooking(owner.getId(), 999L,
+                true));
+    }
+
+    @DirtiesContext
+    @Test
+    void setStatusBooking_setStatusDuplicated_expectedError() {
+        bookingService.setStatusBooking(booking.getId(), owner.getId(), true);
+        assertThrows(ValidatorException.class, () -> bookingService.setStatusBooking(booking.getId(), owner.getId(), true));
+    }
+
+    /**
+     * Серия тесто для "Владельцев"
+     */
+    @DirtiesContext
     @Test
     void getAllBookingByStatusFromOwner_stateAll_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "All", 0, 10);
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromOwner(owner.getId(), "ALL", 0, 10);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromOwner_statePAST_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
+    void getAllBookingByStatusFromOwner_statePast_returnListDto() throws Exception {
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "PAST", 0, 10);
+        TimeUnit.SECONDS.sleep(4);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromOwner(owner.getId(), "PAST", 0, 10);
+
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromOwner_stateFUTURE_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
+    void getAllBookingByStatusFromOwner_stateWaiting_returnListDto() {
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "FUTURE", 0, 10);
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromOwner(owner.getId(), "WAITING", 0, 10);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromOwner_stateWAITING_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
+    void getAllBookingByStatusFromOwner_stateReject_returnListDto() {
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "WAITING", 0, 10);
+        BookingDto newBookingDto = bookingService.setStatusBooking(owner.getId(), booking.getId(), false);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromOwner(owner.getId(), "REJECTED", 0, 10);
+
+        assertEquals(bookingDtoList.get(0).getId(), newBookingDto.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), newBookingDto.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), newBookingDto.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), newBookingDto.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), newBookingDto.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), newBookingDto.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), newBookingDto.getBooker().getId());
     }
 
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromOwner_stateREJECTED_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
+    void getAllBookingByStatusFromOwner_stateFuture_returnListDto() {
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromOwner(owner.getId(), "FUTURE", 0, 10);
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "REJECTED", 0, 10);
-
-        assertTrue(actualBookings.contains(bookingDto));
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromOwner_stateUnsupportedStatus_exeption() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenThrow(UnsupportedStatus.class);
+    public void getAllBookingByStatusFromOwner_stateCurrent_returnListDto() throws Exception {
+        TimeUnit.SECONDS.sleep(2);
 
-        assertThrows(UnsupportedStatus.class, () -> service.getAllBookingByStatusFromOwner(1L,
-                "AVADAKEDABRA_TESTING!", 0, 10));
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromOwner(owner.getId(), "CURRENT", 0, 10);
+
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+    @DirtiesContext
+    @Test
+    public void getAllBookingByStatusFromOwner_userNotFound_expectedErorr() {
+        assertThrows(NotFoundException.class, () -> bookingService.getAllBookingByStatusFromOwner(99L, "ALL", 0, 10));
+    }
+
+    @DirtiesContext
+    @Test
+    void getAllBookingByStatusFromOwner_stateUnsupported_returnException() {
+        assertThrows(UnsupportedStatus.class, () -> bookingService.getAllBookingByStatusFromOwner(owner.getId(), "Unsupported", 0, 10));
+    }
+
+    /**
+     * Серия тесто для "заёмщиков"
+     */
+    @DirtiesContext
     @Test
     void getAllBookingByStatusFromBooker_stateAll_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "All", 0, 10);
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromBooker(booker.getId(), "ALL", 0, 10);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromBooker_statePAST_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
+    void getAllBookingByStatusFromFuture_stateAll_returnListDto() {
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "PAST", 0, 10);
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromBooker(booker.getId(), "FUTURE", 0, 10);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromBooker_stateFUTURE_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
+    void getAllBookingByStatusFromBooker_stateWaiting_returnListDto() {
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "FUTURE", 0, 10);
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromBooker(booker.getId(), "WAITING", 0, 10);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromBooker_stateWAITING_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
+    void getAllBookingByStatusFromBooker_statePast_returnListDto() throws InterruptedException {
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "WAITING", 0, 10);
+        TimeUnit.SECONDS.sleep(4);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromBooker(booker.getId(), "PAST", 0, 10);
+
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromBooker_stateREJECTED_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingDto));
+    void getAllBookingByStatusFromBooker_stateCurrent_returnListDto() throws InterruptedException {
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "REJECTED", 0, 10);
+        TimeUnit.SECONDS.sleep(2);
 
-        assertTrue(actualBookings.contains(bookingDto));
+        List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromBooker(booker.getId(), "CURRENT", 0, 10);
+
+        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
+        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
+        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
+        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
+        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
+        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
+        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
     }
 
+    @DirtiesContext
     @Test
-    void getAllBookingByStatusFromBooker_stateUnsupportedStatus_exeption() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenThrow(UnsupportedStatus.class);
-
-        assertThrows(UnsupportedStatus.class, () -> service.getAllBookingByStatusFromBooker(1L,
-                "AVADAKEDABRA_TESTING!", 0, 10));
+    void getUsersBooking_stateUnsupport_returnException() {
+        assertThrows(UnsupportedStatus.class, () -> bookingService.getAllBookingByStatusFromBooker(booker.getId(), "Ikibana", 0, 10));
     }
 
+    @DirtiesContext
     @Test
-    void getBookingByIdAndUserId_returnDto() {
-        when(service.getBookingByIdAndUserId(anyLong(), anyLong())).thenReturn(bookingDto);
+    public void getUsersBooking_userNotFound_error() {
+        assertThrows(NotFoundException.class, () -> bookingService.getAllBookingByStatusFromBooker(99L, "All", 0, 10));
+    }
 
-        BookingDto booking = service.getBookingByIdAndUserId(1L, 1L);
 
-        assertNotNull(booking);
-        assertEquals(bookingDto.getId(), booking.getId());
-        assertEquals(bookingDto.getItemId(), booking.getItemId());
-        assertEquals(bookingDto.getStatus(), booking.getStatus());
+    @DirtiesContext
+    @Test
+    void getBookingByIdAndUserId_notExistBookingFromUser_returnExeption() {
+        assertThrows(NotFoundException.class, () -> bookingService.getBookingByIdAndUserId(booking.getId(), 999L));
     }
 }
