@@ -123,7 +123,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItem(String requestSearch, Integer from, Integer size) {
-        if (requestSearch.isEmpty() || requestSearch.isBlank()) {
+        if (requestSearch.isEmpty()) {
             return Collections.emptyList();
         }
         Pageable pageable = PageRequest.of(from / size, size);

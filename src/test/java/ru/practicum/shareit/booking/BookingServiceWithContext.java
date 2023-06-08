@@ -73,7 +73,18 @@ public class BookingServiceWithContext {
 
     @DirtiesContext
     @Test
-    void createNewBooking_dateBookingNotCorrect_expectedError() {
+    void createNewBooking_endDateBookingNotCorrect_expectedError() {
+        ItemDto newItemDto = itemService.createNewItem(new ItemInputDto("Отвертка", "Электрическая с батарейкой",
+                true, null), owner.getId());
+        BookingInputDto newBooking = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
+                LocalDateTime.now().plusSeconds(3), newItemDto.getId());
+
+        assertThrows(ValidatorException.class, () -> bookingService.createNewBooking(newBooking, booker.getId()));
+    }
+
+    @DirtiesContext
+    @Test
+    void createNewBooking_staartDateBookingNotCorrect_expectedError() {
         ItemDto newItemDto = itemService.createNewItem(new ItemInputDto("Отвертка", "Электрическая с батарейкой",
                 true, null), owner.getId());
         BookingInputDto newBooking = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
@@ -265,13 +276,13 @@ public class BookingServiceWithContext {
 
     @DirtiesContext
     @Test
-    public void getAllBookingByStatusFromOwner_userNotFound_underNormalConditionsStateDefault() {
+    public void getAllBookingByStatusFromOwner_userNotFound_expectedErorr() {
         assertThrows(NotFoundException.class, () -> bookingService.getAllBookingByStatusFromOwner(99L, "ALL", 0, 10));
     }
 
     @DirtiesContext
     @Test
-    public void getAllBookingByStatusFromOwner_returnException_underNormalConditionsStateDefault() {
+    void getAllBookingByStatusFromOwner_stateUnsupported_returnException() {
         assertThrows(UnsupportedStatus.class, () -> bookingService.getAllBookingByStatusFromOwner(owner.getId(), "Unsupported", 0, 10));
     }
 
@@ -296,7 +307,7 @@ public class BookingServiceWithContext {
 
     @DirtiesContext
     @Test
-    public void getAllBookingByStatusFromFuture_stateAll_returnListDto() {
+    void getAllBookingByStatusFromFuture_stateAll_returnListDto() {
 
         List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromBooker(booker.getId(), "FUTURE", 0, 10);
 
@@ -311,7 +322,7 @@ public class BookingServiceWithContext {
 
     @DirtiesContext
     @Test
-    public void getAllBookingByStatusFromBooker_stateWaiting_returnListDto() {
+    void getAllBookingByStatusFromBooker_stateWaiting_returnListDto() {
 
         List<BookingDto> bookingDtoList = bookingService.getAllBookingByStatusFromBooker(booker.getId(), "WAITING", 0, 10);
 
@@ -326,7 +337,7 @@ public class BookingServiceWithContext {
 
     @DirtiesContext
     @Test
-    public void getAllBookingByStatusFromBooker_statePast_returnListDto() throws InterruptedException {
+    void getAllBookingByStatusFromBooker_statePast_returnListDto() throws InterruptedException {
 
         TimeUnit.SECONDS.sleep(4);
 
@@ -343,7 +354,7 @@ public class BookingServiceWithContext {
 
     @DirtiesContext
     @Test
-    public void getAllBookingByStatusFromBooker_stateCurrent_returnListDto() throws InterruptedException {
+    void getAllBookingByStatusFromBooker_stateCurrent_returnListDto() throws InterruptedException {
 
         TimeUnit.SECONDS.sleep(2);
 
@@ -360,13 +371,20 @@ public class BookingServiceWithContext {
 
     @DirtiesContext
     @Test
-    public void getUsersBooking_returnException_underNormalConditionsStateDefault() {
+    void getUsersBooking_stateUnsupport_returnException() {
         assertThrows(UnsupportedStatus.class, () -> bookingService.getAllBookingByStatusFromBooker(booker.getId(), "Ikibana", 0, 10));
     }
 
     @DirtiesContext
     @Test
-    public void getUsersBooking_userNotFound_underNormalConditionsStateDefault() {
+    public void getUsersBooking_userNotFound_error() {
         assertThrows(NotFoundException.class, () -> bookingService.getAllBookingByStatusFromBooker(99L, "All", 0, 10));
+    }
+
+
+    @DirtiesContext
+    @Test
+    void getBookingByIdAndUserId_notExistBookingFromUser_returnExeption() {
+        assertThrows(NotFoundException.class, () -> bookingService.getBookingByIdAndUserId(booking.getId(), 999L));
     }
 }

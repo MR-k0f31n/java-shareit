@@ -7,12 +7,16 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.BookingInputDto;
+import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidatorException;
 import ru.practicum.shareit.item.ItemDto;
 import ru.practicum.shareit.item.ItemInputDto;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.comment.CommentInputDto;
+import ru.practicum.shareit.request.ItemRequestDto;
+import ru.practicum.shareit.request.ItemRequestInputDto;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
 
@@ -25,13 +29,39 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemServiceContextTest {
-    final UserDto user1 = new UserDto(1L, "name1", "emai1@mail.com");
-    final ItemInputDto inputItem = new ItemInputDto("Отвертка", "Отвертка в печень ни один тест не вечен",
-            true, null);
     private final UserService service;
     private final ItemService items;
+    private final ItemRequestService itemRequestService;
+    private final BookingService bookingService;
+
+    private final UserDto user1 = new UserDto(1L, "name1", "emai1@mail.com");
+    private final ItemInputDto inputItem = new ItemInputDto("Отвертка", "Отвертка в печень ни один тест не вечен",
+            true, null);
     private final BookingInputDto inputDto = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
             LocalDateTime.now().plusMinutes(2), 1L);
+
+
+    @DirtiesContext
+    @Test
+    void createItemFromRequest_returnItemWitchRequest() {
+        UserDto user = service.createNewUser(new UserDto(null, "name", "mail@mail.ru"));
+        ItemRequestDto request = itemRequestService.createNewItemRequest(new ItemRequestInputDto("need item"),
+                user.getId());
+        ItemDto item = items.createNewItem(new ItemInputDto("Item", "descr", true, request.getId()),
+                user.getId());
+
+        assertEquals(user.getId(), item.getRequestId());
+    }
+
+    @DirtiesContext
+    @Test
+    void createItemFromRequest_requestNotFound() {
+        UserDto user = service.createNewUser(new UserDto(null, "name", "mail@mail.ru"));
+        ItemRequestDto request = itemRequestService.createNewItemRequest(new ItemRequestInputDto("need item"),
+                user.getId());
+        assertThrows(NotFoundException.class, () -> items.createNewItem(new ItemInputDto("Item", "descr", true, 999L),
+                user.getId()));
+    }
 
     @DirtiesContext
     @Test
@@ -96,7 +126,8 @@ public class ItemServiceContextTest {
     @DirtiesContext
     @Test
     void getItem_returnDto() {
-        UserDto userDto = service.createNewUser(user1);
+        final UserDto userOne = new UserDto(1L, "name1", "emai2313@mail.com");
+        UserDto userDto = service.createNewUser(userOne);
         ItemDto item1 = items.createNewItem(inputItem, userDto.getId());
         ItemDto findItem = items.getItemDtoById(item1.getId(), userDto.getId());
         assertEquals(item1.getName(), findItem.getName());
@@ -134,6 +165,26 @@ public class ItemServiceContextTest {
 
     @DirtiesContext
     @Test
+    void searchItem_emptyRequest_emptyList() {
+        service.createNewUser(user1);
+        ItemDto item1 = items.createNewItem(inputItem, user1.getId());
+        List<ItemDto> findItem = items.searchItem("", 0, 10);
+        assertEquals(0, findItem.size());
+        items.deleteItem(item1.getId(), user1.getId());
+    }
+
+    @DirtiesContext
+    @Test
+    void searchItem_emptySpace_emptyList() {
+        service.createNewUser(user1);
+        ItemDto item1 = items.createNewItem(inputItem, user1.getId());
+        List<ItemDto> findItem = items.searchItem("  ", 0, 10);
+        assertEquals(0, findItem.size());
+        items.deleteItem(item1.getId(), user1.getId());
+    }
+
+    @DirtiesContext
+    @Test
     void addComment_textIsEmpty() {
         CommentInputDto input = new CommentInputDto();
         input.setText(" ");
@@ -158,7 +209,22 @@ public class ItemServiceContextTest {
 
     @DirtiesContext
     @Test
-    void deleteItemItem_userNotOwner_expectedError() {
+    void deleteItemItem_userNotFound_expectedError() {
         assertThrows(NotFoundException.class, () -> items.deleteItem(1L, 999L));
+    }
+
+    @DirtiesContext
+    @Test
+    void deleteItemItem_itemNotFound_expectedError() {
+        assertThrows(NotFoundException.class, () -> items.deleteItem(999L, 1L));
+    }
+
+    @DirtiesContext
+    @Test
+    void deleteItemItem_userNotOwner_expectedError() {
+        UserDto userDto = service.createNewUser(user1);
+        UserDto userDto1 = service.createNewUser(new UserDto(2L, "kto-to", "ctoTo@mail.com"));
+        ItemDto itemFromDelete = items.createNewItem(new ItemInputDto("ItemFromDelete", "from delete desc", true, null), userDto.getId());
+        assertThrows(NotFoundException.class, () -> items.deleteItem(itemFromDelete.getId(), userDto1.getId()));
     }
 }
