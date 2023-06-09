@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemDto;
@@ -22,10 +24,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemRequestServiceTest {
+    final Pageable pageable = PageRequest.of(0 / 10, 10);
     private final UserService userService;
     private final ItemRequestService requestService;
     private final ItemService itemService;
-
     UserDto inputUser = new UserDto(null, "name", "email@mail.ru");
     ItemRequestInputDto inputRequest = new ItemRequestInputDto("I need items");
 
@@ -75,7 +77,7 @@ public class ItemRequestServiceTest {
         ItemDto item = itemService.createNewItem(new ItemInputDto("Its need", "100%", true,
                 request.getId()), user.getId());
 
-        List<ItemRequestWithAnswerDto> requests = requestService.getAllItemRequestByUserIdWithAnswer(user.getId(), 0, 10);
+        List<ItemRequestWithAnswerDto> requests = requestService.getAllItemRequestByUserIdWithAnswer(user.getId(), pageable);
 
         assertEquals(requests.get(0).getItems().get(0).getId(), item.getId());
         assertEquals(requests.get(0).getItems().get(0).getName(), item.getName());
@@ -90,7 +92,7 @@ public class ItemRequestServiceTest {
         ItemDto item = itemService.createNewItem(new ItemInputDto("Its need", "100%", true,
                 request.getId()), user.getId());
 
-        List<ItemRequestWithAnswerDto> requests = requestService.getAllRequest(user2.getId(), 0, 10);
+        List<ItemRequestWithAnswerDto> requests = requestService.getAllRequest(user2.getId(), pageable);
 
         assertEquals(requests.get(0).getItems().get(0).getId(), item.getId());
         assertEquals(requests.get(0).getItems().get(0).getName(), item.getName());

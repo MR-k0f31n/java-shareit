@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -88,9 +87,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingByStatusFromOwner(Long userId, String status, Integer from, Integer size) {
+    public List<BookingDto> getAllBookingByStatusFromOwner(Long userId, String status, Pageable pageable) {
         getUserById(userId);
-        Pageable pageable = PageRequest.of(from / size, size);
         switch (status) {
             case "ALL":
                 return bookingToDto(repository.findAllByItemOwnerIdOrderByStartRentDesc(userId, pageable));
@@ -115,9 +113,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingByStatusFromBooker(Long userId, String status, Integer from, Integer size) {
+    public List<BookingDto> getAllBookingByStatusFromBooker(Long userId, String status, Pageable pageable) {
         getUserById(userId);
-        Pageable pageable = PageRequest.of(from / size, size);
         switch (status) {
             case "ALL":
                 return bookingToDto(repository.findAllByBookerIdOrderByStartRentDesc(userId, pageable));

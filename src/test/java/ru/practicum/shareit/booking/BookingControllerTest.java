@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.exception.ValidatorException;
@@ -170,23 +171,23 @@ public class BookingControllerTest {
 
     @Test
     void getBookingByBookerId_returnListBookingDto_length1() throws Exception {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(List.of(bookingDto));
+        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), any(Pageable.class))).thenReturn(List.of(bookingDto));
 
         mockMvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk());
 
-        verify(service, times(1)).getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt());
+        verify(service, times(1)).getAllBookingByStatusFromBooker(anyLong(), anyString(), any(Pageable.class));
     }
 
     @Test
     void getBookingByOwnerId_returnListDto_length1() throws Exception {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(List.of(bookingDto));
+        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), any(Pageable.class))).thenReturn(List.of(bookingDto));
 
         mockMvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk());
 
-        verify(service, times(1)).getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt());
+        verify(service, times(1)).getAllBookingByStatusFromOwner(anyLong(), anyString(), any(Pageable.class));
     }
 }

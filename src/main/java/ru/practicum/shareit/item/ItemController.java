@@ -5,6 +5,8 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.CommentDto;
@@ -30,7 +32,8 @@ public class ItemController {
                                             @RequestParam(defaultValue = "10") @Min(1) Integer size,
                                             @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.debug("Endpoint request: 'GET /items'");
-        return service.getAllItemsByOwner(userId, from, size);
+        final Pageable pageable = PageRequest.of(from / size, size);
+        return service.getAllItemsByOwner(userId, pageable);
     }
 
     @GetMapping("/{id}")
@@ -63,7 +66,8 @@ public class ItemController {
                                     @RequestParam(defaultValue = "10") @Min(1) Integer size,
                                     @RequestParam String text) {
         log.debug("Endpoint request: 'GET items/search?text='" + text);
-        return service.searchItem(text, from, size);
+        final Pageable pageable = PageRequest.of(from / size, size);
+        return service.searchItem(text, pageable);
     }
 
     @PostMapping("/{itemId}/comment")
