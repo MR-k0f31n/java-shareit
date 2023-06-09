@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.ItemController;
@@ -147,7 +148,7 @@ public class ItemControllerTest {
 
     @Test
     void getAllItemsByOwner_userExist_itemList2size() throws Exception {
-        when(service.getAllItemsByOwner(anyLong(), anyInt(), anyInt())).thenReturn(Arrays.asList(itemDto1, itemDto2));
+        when(service.getAllItemsByOwner(anyLong(), any(Pageable.class))).thenReturn(Arrays.asList(itemDto1, itemDto2));
 
         mockMvc.perform(get("/items")
                         .header("X-Sharer-User-Id", user1.getId()))
@@ -155,19 +156,19 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$[0].name", is(itemDto1.getName())))
                 .andExpect(jsonPath("$[1].name", is(itemDto2.getName())));
 
-        verify(service, times(1)).getAllItemsByOwner(anyLong(), anyInt(), anyInt());
+        verify(service, times(1)).getAllItemsByOwner(anyLong(), any(Pageable.class));
     }
 
     @Test
     void getAllItemsByOwner_userExist_itemListEmpty() throws Exception {
-        when(service.getAllItemsByOwner(anyLong(), anyInt(), anyInt())).thenReturn(new ArrayList<>());
+        when(service.getAllItemsByOwner(anyLong(), any(Pageable.class))).thenReturn(new ArrayList<>());
 
         mockMvc.perform(get("/items")
                         .header("X-Sharer-User-Id", user1.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
 
-        verify(service, times(1)).getAllItemsByOwner(anyLong(), anyInt(), anyInt());
+        verify(service, times(1)).getAllItemsByOwner(anyLong(), any(Pageable.class));
     }
 
     @Test
@@ -240,7 +241,7 @@ public class ItemControllerTest {
 
     @Test
     void testSearchItem_returnItemDto() throws Exception {
-        when(service.searchItem(anyString(), anyInt(), anyInt())).thenReturn(List.of(itemDto1));
+        when(service.searchItem(anyString(), any(Pageable.class))).thenReturn(List.of(itemDto1));
 
         mockMvc.perform(get("/items/search")
                         .header("X-Sharer-User-Id", user1.getId())
@@ -248,7 +249,7 @@ public class ItemControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name", is(itemDto1.getName())));
 
-        verify(service, times(1)).searchItem(anyString(), anyInt(), anyInt());
+        verify(service, times(1)).searchItem(anyString(), any(Pageable.class));
     }
 
     @Test

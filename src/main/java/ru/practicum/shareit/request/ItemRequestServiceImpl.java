@@ -2,7 +2,6 @@ package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.IncorrectDataExeption;
@@ -39,10 +38,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestWithAnswerDto> getAllItemRequestByUserIdWithAnswer(Long id, Integer from, Integer size) {
+    public List<ItemRequestWithAnswerDto> getAllItemRequestByUserIdWithAnswer(Long id, Pageable pageable) {
         getUserById(id);
         log.debug("Task - get all request by user owner request");
-        Pageable pageable = PageRequest.of(from / size, size);
         final List<ItemRequestWithAnswerDto> allRequest = objectToDtoListWithAnswer(repository
                 .findAllByRequesterIdOrderByCreatedDateDesc(id, pageable));
         for (ItemRequestWithAnswerDto request : allRequest) {
@@ -52,10 +50,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestWithAnswerDto> getAllRequest(Long userId, Integer from, Integer size) {
+    public List<ItemRequestWithAnswerDto> getAllRequest(Long userId, Pageable pageable) {
         getUserById(userId);
         log.debug("Task - get all request from all users");
-        Pageable pageable = PageRequest.of(from / size, size);
         List<ItemRequestWithAnswerDto> result = objectToDtoListWithAnswer(repository
                 .findAllByRequesterIdNotOrderByCreatedDateDesc(userId, pageable));
         for (ItemRequestWithAnswerDto request : result) {

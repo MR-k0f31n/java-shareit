@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UnsupportedStatus;
 import ru.practicum.shareit.exception.ValidatorException;
@@ -39,6 +41,7 @@ public class BookingServiceTestMock {
             new Item(), new User(), Status.WAITING);
     private final Booking booking = new Booking(1L, inputDto.getStart(), inputDto.getEnd(), new Item(), new User(),
             Status.WAITING);
+    private final Pageable pageable = PageRequest.of(0 / 10, 10);
 
     @Test
     void createNewBooking_expectedCorrect_returnDto() {
@@ -109,120 +112,120 @@ public class BookingServiceTestMock {
 
     @Test
     void getAllBookingByStatusFromOwner_stateAll_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "All", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "All", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromOwner_statePAST_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "PAST", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "PAST", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromOwner_stateFUTURE_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "FUTURE", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "FUTURE", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromOwner_stateWAITING_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "WAITING", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "WAITING", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromOwner_stateREJECTED_returnListDto() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "REJECTED", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromOwner(1L, "REJECTED", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromOwner_stateUnsupportedStatus_exeption() {
-        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromOwner(anyLong(), anyString(), any(Pageable.class)))
                 .thenThrow(UnsupportedStatus.class);
 
         assertThrows(UnsupportedStatus.class, () -> service.getAllBookingByStatusFromOwner(1L,
-                "AVADAKEDABRA_TESTING!", 0, 10));
+                "AVADAKEDABRA_TESTING!", pageable));
     }
 
     @Test
     void getAllBookingByStatusFromBooker_stateAll_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "All", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "All", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromBooker_statePAST_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "PAST", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "PAST", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromBooker_stateFUTURE_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "FUTURE", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "FUTURE", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromBooker_stateWAITING_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "WAITING", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "WAITING", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromBooker_stateREJECTED_returnListDto() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingDto));
 
-        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "REJECTED", 0, 10);
+        List<BookingDto> actualBookings = service.getAllBookingByStatusFromBooker(1L, "REJECTED", pageable);
 
         assertTrue(actualBookings.contains(bookingDto));
     }
 
     @Test
     void getAllBookingByStatusFromBooker_stateUnsupportedStatus_exeption() {
-        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), anyInt(), anyInt()))
+        when(service.getAllBookingByStatusFromBooker(anyLong(), anyString(), any(Pageable.class)))
                 .thenThrow(UnsupportedStatus.class);
 
         assertThrows(UnsupportedStatus.class, () -> service.getAllBookingByStatusFromBooker(1L,
-                "AVADAKEDABRA_TESTING!", 0, 10));
+                "AVADAKEDABRA_TESTING!", pageable));
     }
 
     @Test

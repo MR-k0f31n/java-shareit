@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidatorException;
 import ru.practicum.shareit.item.ItemDto;
@@ -47,12 +49,13 @@ public class ItemServiceTestMock {
             dtoToUser(user1), null, null, List.of(commentDto1), null);
     private final ItemDto itemDto1 = new ItemDto(1L, "item1", "descr1", true,
             dtoToUser(user1), null, null, new ArrayList<>(), null);
+    private final Pageable pageable = PageRequest.of(0 / 10, 10);
 
     @Test
     void testGetAllItemsByOwnerId_returnListItemDto_length2() {
-        when(service.getAllItemsByOwner(anyLong(), anyInt(), anyInt())).thenReturn(List.of(itemDto1, itemDto2));
+        when(service.getAllItemsByOwner(anyLong(), any(Pageable.class))).thenReturn(List.of(itemDto1, itemDto2));
 
-        List<ItemDto> items = service.getAllItemsByOwner(user1.getId(), 0, 10);
+        List<ItemDto> items = service.getAllItemsByOwner(user1.getId(), pageable);
 
         assertNotNull(items, "Предметов нет");
         assertEquals(2, items.size(), "Количесвто предметов не совпадает");
@@ -151,9 +154,9 @@ public class ItemServiceTestMock {
 
     @Test
     void searchItem_returnListItemDto_length1() {
-        when(service.searchItem(anyString(), anyInt(), anyInt())).thenReturn(List.of(itemDto1));
+        when(service.searchItem(anyString(), any(Pageable.class))).thenReturn(List.of(itemDto1));
 
-        assertEquals(1, service.searchItem("iTem1", 0, 10).size());
+        assertEquals(1, service.searchItem("iTem1", pageable).size());
     }
 
     @Test

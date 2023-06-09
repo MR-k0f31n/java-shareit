@@ -2,7 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -42,10 +41,9 @@ public class ItemServiceImpl implements ItemService {
     private ItemRequestRepository requests;
 
     @Override
-    public List<ItemDto> getAllItemsByOwner(Long id, Integer from, Integer size) {
+    public List<ItemDto> getAllItemsByOwner(Long id, Pageable pageable) {
         log.debug("Task get all items by owner");
         userService.findUserById(id);
-        Pageable pageable = PageRequest.of(from / size, size);
         List<ItemDto> itemDtoList = itemToDto(repository.findAllByOwnerId(id, pageable));
         for (ItemDto itemDto : itemDtoList) {
             setNextAndLastDateBooking(itemDto);
@@ -122,11 +120,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItem(String requestSearch, Integer from, Integer size) {
+    public List<ItemDto> searchItem(String requestSearch, Pageable pageable) {
         if (requestSearch.isEmpty()) {
             return Collections.emptyList();
         }
-        Pageable pageable = PageRequest.of(from / size, size);
         return itemToDto(
                 repository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailableTrue(
                         requestSearch, requestSearch, pageable));

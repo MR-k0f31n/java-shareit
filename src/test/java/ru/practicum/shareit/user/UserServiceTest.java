@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.BookingInputDto;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -27,6 +29,7 @@ public class UserServiceTest {
     private final ItemService items;
     private final BookingInputDto inputDto = new BookingInputDto(LocalDateTime.now().plusSeconds(20),
             LocalDateTime.now().plusMinutes(2), 1L);
+    private final Pageable pageable = PageRequest.of(0 / 10, 10);
 
     @Test
     void updateUserEmailInContext_expectedCorrect_returnUserDtoBeforeUpdate() {
@@ -135,12 +138,12 @@ public class UserServiceTest {
         items.createNewItem(item1, user1.getId());
         items.createNewItem(item2, user1.getId());
         assertEquals(1, service.findAllUser().size(), "Юзеров нет");
-        assertEquals(2, items.getAllItemsByOwner(user1.getId(), 0, 10).size(), "Итемов нет");
+        assertEquals(2, items.getAllItemsByOwner(user1.getId(), pageable).size(), "Итемов нет");
 
         service.deleteUserById(1L);
 
         assertEquals(0, service.findAllUser().size(), "Юзер не удалился");
-        assertThrows(NotFoundException.class, () -> items.getAllItemsByOwner(user1.getId(), 0, 10),
+        assertThrows(NotFoundException.class, () -> items.getAllItemsByOwner(user1.getId(), pageable),
                 "User not deleted");
     }
 }
