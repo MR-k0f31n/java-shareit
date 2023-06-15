@@ -3,14 +3,12 @@ package ru.practicum.shareit.user;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.exception.EmailConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 
 import javax.transaction.Transactional;
-import javax.validation.constraints.Email;
 import java.util.List;
 
 import static ru.practicum.shareit.user.UserMapper.dtoToUser;
@@ -22,7 +20,6 @@ import static ru.practicum.shareit.user.UserMapper.userToDto;
 @Service
 @AllArgsConstructor
 @Slf4j
-@Validated
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final ItemRepository itemRepository;
@@ -45,7 +42,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UserDto userDto, Long id) {
         log.warn("Task update user, user info: '{}'", userDto);
-        @Email final String email = userDto.getEmail();
+        final String email = userDto.getEmail();
         final String name = userDto.getName();
         if (name == null && email == null) {
             return null;

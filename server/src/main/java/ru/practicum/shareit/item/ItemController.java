@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.comment.CommentInputDto;
@@ -22,7 +21,6 @@ import java.util.List;
 @RequestMapping(path = "/items")
 @AllArgsConstructor
 @Slf4j
-@Validated
 public class ItemController {
     private ItemService service;
 
