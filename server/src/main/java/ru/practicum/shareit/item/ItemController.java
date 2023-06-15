@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.CommentDto;
@@ -30,7 +31,7 @@ public class ItemController {
                                             @RequestParam Integer size,
                                             @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.debug("Endpoint request: 'GET /items'");
-        final Pageable pageable = PageRequest.of(from / size, size);
+        final Pageable pageable = PageRequest.of(from / size, size, Sort.by("id"));
         return service.getAllItemsByOwner(userId, pageable);
     }
 
