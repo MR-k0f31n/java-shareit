@@ -16,6 +16,8 @@ Template repository for Shareit project.
 - Spring BOOT
 - H2 SQL
 - Maven
+- PostgreSQL
+- Docker
 
 ## Structure DB
 <img src="DataBase.png">
